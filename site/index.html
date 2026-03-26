@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>91Porn</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --bg-card: #16213e;
+      --bg-tab: #0f0f1a;
+      --text: #fff;
+      --text-secondary: rgba(255,255,255,0.55);
+      --text-active: rgba(255,255,255,0.9);
+      --accent: #e94560;
+      --accent-gold: #ffd700;
+      --tab-height: 50px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: calc(var(--tab-height) + var(--safe-bottom));
+    }
+    img { display:block; }
+    a { color:inherit; text-decoration:none; }
+
+    /* Bottom Tab Bar */
+    .tab-bar {
+      position: fixed; bottom:0; left:0; right:0;
+      height: calc(var(--tab-height) + var(--safe-bottom));
+      padding-bottom: var(--safe-bottom);
+      background: var(--bg-tab);
+      display: flex; align-items: center; justify-content: space-around;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 100;
+    }
+    .tab-item {
+      flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+      padding: 6px 0; cursor:pointer; transition: color .2s;
+      color: var(--text-secondary); font-size: 10px;
+    }
+    .tab-item.active { color: var(--accent); }
+    .tab-item svg { width:22px; height:22px; }
+
+    /* Pages */
+    .page { display:none; min-height:100vh; }
+    .page.active { display:block; }
+
+    /* ===== HOME PAGE ===== */
+    .home-header {
+      position:sticky; top:0; z-index:50;
+      background: linear-gradient(180deg, var(--bg) 80%, transparent);
+      padding: 10px 12px 0;
+    }
+    .home-logo {
+      display:flex; align-items:center; gap:8px; margin-bottom:10px;
+    }
+    .home-logo .logo-circle {
+      width:32px; height:32px; border-radius:50%; background:var(--accent);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:bold; font-size:14px;
+    }
+    .home-logo .logo-text { font-size:18px; font-weight:bold; }
+    .home-logo .logo-desc { font-size:11px; color:var(--text-secondary); margin-left:4px; }
+
+    /* Category Tabs */
+    .cat-tabs {
+      display:flex; overflow-x:auto; gap:16px; padding: 8px 0;
+      scrollbar-width:none; -ms-overflow-style:none;
+    }
+    .cat-tabs::-webkit-scrollbar { display:none; }
+    .cat-tab {
+      white-space:nowrap; font-size:14px; color:var(--text-secondary);
+      cursor:pointer; padding-bottom:6px; border-bottom:2px solid transparent;
+      transition: all .2s; flex-shrink:0;
+    }
+    .cat-tab.active {
+      color:var(--text-active); border-bottom-color:var(--accent); font-weight:600;
+    }
+
+    /* Video Grid */
+    .video-grid {
+      display:grid; grid-template-columns: 1fr 1fr;
+      gap:8px; padding:8px 12px 16px;
+    }
+    .video-card {
+      background: var(--bg-card); border-radius:8px; overflow:hidden;
+      cursor:pointer; transition: transform .15s;
+    }
+    .video-card:active { transform: scale(0.97); }
+    .video-card .cover-box {
+      position:relative; width:100%; padding-top:56.25%; overflow:hidden;
+      background: #0d1b2a;
+    }
+    .video-card .cover-box img {
+      position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;
+    }
+    .video-card .cover-box .badge {
+      position:absolute; top:4px; left:4px;
+      font-size:10px; padding:1px 5px; border-radius:3px; font-weight:600;
+    }
+    .badge-vip { background:linear-gradient(135deg,#e94560,#ff6b6b); }
+    .badge-coins { background:linear-gradient(135deg,#f0a500,#ffcc00); color:#1a1a2e; }
+    .video-card .cover-box .meta-overlay {
+      position:absolute; bottom:0; left:0; right:0;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:3px 6px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      font-size:10px; color:rgba(255,255,255,0.85);
+    }
+    .video-card .info-box { padding:6px 8px; }
+    .video-card .info-box .title {
+      font-size:12px; line-height:1.4;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+      overflow:hidden; word-break:break-all;
+    }
+    .video-card .info-box .tag-row {
+      display:flex; gap:4px; margin-top:4px; flex-wrap:wrap;
+    }
+    .video-card .info-box .tag {
+      font-size:10px; color:var(--accent); background:rgba(233,69,96,0.15);
+      padding:1px 5px; border-radius:3px;
+    }
+    .video-card .info-box .bottom-row {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:4px; font-size:10px; color:var(--text-secondary);
+    }
+
+    /* ===== DOUYIN PAGE ===== */
+    #page-douyin { position:relative; overflow:hidden; }
+    #page-douyin.active { display:flex; flex-direction:column; height:100vh; padding-bottom:0; }
+    .dy-container {
+      position:relative; width:100%; height:calc(100vh - var(--tab-height) - var(--safe-bottom));
+      overflow:hidden; background:#000;
+    }
+    /* Floating header tabs */
+    .dy-top-bar {
+      position:absolute; top:0; left:0; right:0; z-index:20;
+      display:flex; justify-content:center; align-items:center; gap:24px;
+      padding:14px 0 10px;
+      background: linear-gradient(rgba(0,0,0,0.6), transparent);
+    }
+    .dy-top-tab {
+      font-size:16px; color:rgba(255,255,255,0.5); cursor:pointer;
+      padding-bottom:4px; border-bottom:2px solid transparent;
+      transition: all .25s; font-weight:500; position:relative;
+    }
+    .dy-top-tab.active {
+      color:#fff; font-weight:700; font-size:17px;
+    }
+    .dy-top-tab.active::after {
+      content:''; position:absolute; bottom:-2px; left:50%; transform:translateX(-50%);
+      width:20px; height:2px; background:#fff; border-radius:1px;
+    }
+
+    /* Swipe viewport */
+    .dy-swipe-viewport {
+      position:relative; width:100%; height:100%;
+      touch-action: pan-x; /* allow vertical handled by JS */
+    }
+    .dy-slide {
+      position:absolute; top:0; left:0; width:100%; height:100%;
+      will-change: transform; transition: transform .35s cubic-bezier(.25,.46,.45,.94);
+      background:#000; overflow:hidden;
+    }
+    .dy-slide.no-transition { transition:none; }
+    .dy-slide .sv-cover {
+      width:100%; height:100%; object-fit:cover;
+      user-select:none; -webkit-user-drag:none; pointer-events:none;
+    }
+    /* Bottom info overlay */
+    .dy-slide .sv-overlay {
+      position:absolute; bottom:0; left:0; right:60px;
+      padding:16px 12px calc(16px + var(--safe-bottom));
+      background: linear-gradient(transparent 0%, rgba(0,0,0,0.7) 100%);
+      pointer-events:none;
+    }
+    .dy-slide .sv-publisher {
+      display:flex; align-items:center; gap:8px; margin-bottom:8px;
+      pointer-events:auto;
+    }
+    .dy-slide .sv-avatar {
+      width:40px; height:40px; border-radius:50%; object-fit:cover;
+      border:2px solid rgba(255,255,255,0.5); flex-shrink:0;
+    }
+    .dy-slide .sv-name { font-size:15px; font-weight:700; text-shadow:0 1px 3px rgba(0,0,0,0.5); }
+    .dy-slide .sv-follow-btn {
+      background:var(--accent); color:#fff; border:none; border-radius:4px;
+      font-size:12px; padding:3px 10px; cursor:pointer; font-weight:600;
+    }
+    .dy-slide .sv-title {
+      font-size:14px; line-height:1.5; text-shadow:0 1px 3px rgba(0,0,0,0.5);
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .dy-slide .sv-tags {
+      display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;
+    }
+    .dy-slide .sv-tag {
+      font-size:12px; color:rgba(255,255,255,0.8); cursor:pointer;
+    }
+    .dy-slide .sv-tag::before { content:'#'; }
+    /* Music bar */
+    .dy-slide .sv-music {
+      display:flex; align-items:center; gap:6px; margin-top:8px;
+      font-size:12px; color:rgba(255,255,255,0.7);
+      overflow:hidden; white-space:nowrap;
+    }
+    .sv-music-icon { flex-shrink:0; }
+    .sv-music-text {
+      display:inline-block; animation: marquee 8s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform:translateX(0); }
+      100% { transform:translateX(-50%); }
+    }
+
+    /* Right-side action buttons */
+    .dy-slide .sv-actions {
+      position:absolute; right:8px; bottom:calc(100px + var(--safe-bottom));
+      display:flex; flex-direction:column; align-items:center; gap:18px;
+      z-index:5;
+    }
+    .sv-action-btn {
+      display:flex; flex-direction:column; align-items:center; gap:3px;
+      font-size:11px; color:#fff; cursor:pointer;
+      text-shadow:0 1px 3px rgba(0,0,0,0.5);
+    }
+    .sv-action-btn svg { width:30px; height:30px; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
+    .sv-action-btn.liked svg { fill:var(--accent); stroke:var(--accent); }
+
+    /* Avatar in actions column */
+    .sv-actions .sv-action-avatar {
+      position:relative; margin-bottom:6px;
+    }
+    .sv-action-avatar img {
+      width:44px; height:44px; border-radius:50%; object-fit:cover;
+      border:2px solid #fff;
+    }
+    .sv-action-avatar .plus-badge {
+      position:absolute; bottom:-6px; left:50%; transform:translateX(-50%);
+      width:18px; height:18px; background:var(--accent); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; font-weight:bold; line-height:1;
+    }
+    /* Spinning disc */
+    .sv-disc {
+      width:40px; height:40px; border-radius:50%;
+      background: radial-gradient(circle at center, #333 30%, #111 32%, #222 60%, #111 62%);
+      border:2px solid #444;
+      animation: spin 3s linear infinite;
+      margin-top:4px;
+    }
+    @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+
+    /* Play icon center */
+    .dy-slide .sv-play-center {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
+      width:70px; height:70px; background:rgba(255,255,255,0.15); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      transition: transform .2s ease-out; pointer-events:none;
+    }
+    .dy-slide .sv-play-center.show { transform:translate(-50%,-50%) scale(1); }
+    .dy-slide .sv-play-center svg { width:32px; height:32px; fill:#fff; }
+
+    /* Progress bar */
+    .dy-progress-bar {
+      position:absolute; bottom:0; left:0; right:0; height:2px;
+      background:rgba(255,255,255,0.15); z-index:15;
+    }
+    .dy-progress-fill {
+      height:100%; background:#fff; width:0;
+      animation: fakeProgress 15s linear infinite;
+    }
+    @keyframes fakeProgress { 0%{width:0} 100%{width:100%} }
+
+    /* Swipe hint */
+    .dy-swipe-hint {
+      position:absolute; bottom:calc(60px + var(--safe-bottom)); left:50%; transform:translateX(-50%);
+      color:rgba(255,255,255,0.4); font-size:12px;
+      animation: hintBounce 2s ease-in-out infinite;
+      pointer-events:none; z-index:10;
+    }
+    @keyframes hintBounce {
+      0%,100% { transform:translateX(-50%) translateY(0); opacity:0.4; }
+      50% { transform:translateX(-50%) translateY(-8px); opacity:0.8; }
+    }
+    .dy-swipe-hint.hidden { display:none; }
+
+    /* ===== MINE PAGE ===== */
+    .mine-page { background:var(--bg); }
+    .mine-header {
+      padding:20px 16px; display:flex; align-items:center; gap:12px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+    .mine-avatar {
+      width:56px; height:56px; border-radius:50%;
+      background:var(--accent); display:flex; align-items:center; justify-content:center;
+      font-size:24px; flex-shrink:0;
+    }
+    .mine-info { flex:1; }
+    .mine-name { font-size:16px; font-weight:600; }
+    .mine-uid { font-size:12px; color:var(--text-secondary); margin-top:2px; }
+    .mine-vip-banner {
+      margin:12px; padding:12px 16px; border-radius:10px;
+      background: linear-gradient(135deg, #2d1b4e 0%, #1a0a2e 100%);
+      border:1px solid rgba(233,69,96,0.3);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .mine-vip-left { display:flex; flex-direction:column; gap:4px; }
+    .mine-vip-title { font-size:14px; font-weight:600; color:var(--accent-gold); }
+    .mine-vip-desc { font-size:11px; color:var(--text-secondary); }
+    .mine-vip-btn {
+      background: linear-gradient(135deg, var(--accent), #ff6b6b);
+      color:#fff; border:none; padding:6px 16px; border-radius:20px;
+      font-size:12px; font-weight:600; cursor:pointer;
+    }
+
+    .mine-stats {
+      display:flex; justify-content:space-around; padding:16px 12px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .mine-stat { text-align:center; }
+    .mine-stat .num { font-size:18px; font-weight:600; }
+    .mine-stat .label { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+
+    .mine-menu { padding:8px 0; }
+    .mine-menu-item {
+      display:flex; align-items:center; gap:12px;
+      padding:14px 16px; cursor:pointer;
+      transition: background .15s;
+    }
+    .mine-menu-item:active { background:rgba(255,255,255,0.05); }
+    .mine-menu-item svg { width:20px; height:20px; color:var(--text-secondary); flex-shrink:0; }
+    .mine-menu-item .menu-text { flex:1; font-size:14px; }
+    .mine-menu-item .menu-arrow { color:var(--text-secondary); font-size:14px; }
+
+    .mine-section-title {
+      padding:12px 16px 8px; font-size:13px; color:var(--text-secondary);
+      border-top:6px solid rgba(0,0,0,0.3);
+    }
+
+    /* ===== VIDEO DETAIL PAGE ===== */
+    .detail-page {
+      position:fixed; top:0; left:0; right:0; bottom:0;
+      background:var(--bg); z-index:200;
+      display:none; flex-direction:column;
+    }
+    .detail-page.open { display:flex; }
+    .detail-back {
+      position:absolute; top:10px; left:10px; z-index:10;
+      width:32px; height:32px; background:rgba(0,0,0,0.5); border-radius:50%;
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+    }
+    .detail-back svg { width:18px; height:18px; fill:#fff; }
+    .detail-video-area {
+      width:100%; background:#000; position:relative;
+    }
+    .detail-video-area img {
+      width:100%; aspect-ratio:16/9; object-fit:cover;
+    }
+    .detail-video-area .play-btn {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:54px; height:54px; background:rgba(0,0,0,0.6); border-radius:50%;
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+    }
+    .detail-video-area .play-btn svg { width:24px; height:24px; fill:#fff; }
+
+    .detail-content {
+      flex:1; overflow-y:auto; padding-bottom:20px;
+    }
+    .detail-tabs {
+      display:flex; gap:20px; padding:10px 16px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      position:sticky; top:0; background:var(--bg); z-index:5;
+    }
+    .detail-tab {
+      font-size:14px; color:var(--text-secondary); cursor:pointer; padding-bottom:6px;
+    }
+    .detail-tab.active { color:var(--text-active); border-bottom:2px solid var(--accent); font-weight:600; }
+
+    .detail-intro { padding:12px 16px; }
+    .detail-title { font-size:15px; font-weight:600; line-height:1.5; }
+    .detail-tags { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+    .detail-tags .tag {
+      font-size:11px; color:var(--accent); background:rgba(233,69,96,0.15);
+      padding:2px 8px; border-radius:4px; cursor:pointer;
+    }
+    .detail-actions {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:8px 16px; margin-top:8px;
+    }
+    .detail-actions .left { font-size:12px; color:var(--text-secondary); }
+    .detail-actions .right { display:flex; gap:16px; }
+    .detail-action-item {
+      display:flex; align-items:center; gap:4px;
+      font-size:12px; color:var(--text-secondary); cursor:pointer;
+    }
+    .detail-action-item svg { width:18px; height:18px; }
+
+    .detail-recommend { padding:12px; }
+    .detail-recommend .section-title {
+      font-size:14px; font-weight:600; margin-bottom:10px;
+    }
+
+    /* Loading placeholder */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.06) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
+</head>
+<body>
+
+<!-- ===== HOME PAGE ===== -->
+<div class="page active" id="page-home">
+  <div class="home-header">
+    <div class="home-logo">
+      <div class="logo-circle">91</div>
+      <span class="logo-text">91porn</span>
+      <span class="logo-desc">亚洲最火成人网站</span>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+  </div>
+  <div class="video-grid" id="homeGrid"></div>
+</div>
+
+<!-- ===== DOUYIN PAGE ===== -->
+<div class="page" id="page-douyin">
+  <div class="dy-container">
+    <!-- Floating top tabs -->
+    <div class="dy-top-bar">
+      <div class="dy-top-tab active" data-dy-tab="recommend" onclick="switchDyTab('recommend')">推荐</div>
+      <div class="dy-top-tab" data-dy-tab="latest" onclick="switchDyTab('latest')">最新</div>
+    </div>
+    <!-- Swipe viewport -->
+    <div class="dy-swipe-viewport" id="dyViewport">
+      <!-- Slides injected by JS: .dy-slide for prev / current / next -->
+    </div>
+    <!-- Progress bar -->
+    <div class="dy-progress-bar"><div class="dy-progress-fill" id="dyProgress"></div></div>
+    <!-- Swipe hint -->
+    <div class="dy-swipe-hint" id="dyHint">上滑查看更多</div>
+  </div>
+</div>
+
+<!-- ===== MINE PAGE ===== -->
+<div class="page" id="page-mine">
+  <div class="mine-page">
+    <div class="mine-header">
+      <div class="mine-avatar">👤</div>
+      <div class="mine-info">
+        <div class="mine-name">游客用户</div>
+        <div class="mine-uid">UID: 11206309</div>
+      </div>
+    </div>
+    <div class="mine-vip-banner">
+      <div class="mine-vip-left">
+        <div class="mine-vip-title">开通VIP会员</div>
+        <div class="mine-vip-desc">免费观看全站百万视频</div>
+      </div>
+      <button class="mine-vip-btn">立即开通</button>
+    </div>
+    <div class="mine-stats">
+      <div class="mine-stat"><div class="num">0</div><div class="label">关注</div></div>
+      <div class="mine-stat"><div class="num">0</div><div class="label">粉丝</div></div>
+      <div class="mine-stat"><div class="num">0</div><div class="label">获赞</div></div>
+      <div class="mine-stat"><div class="num">0</div><div class="label">作品</div></div>
+    </div>
+    <div class="mine-section-title">常用功能</div>
+    <div class="mine-menu">
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span class="menu-text">我的收藏</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="menu-text">观看历史</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span class="menu-text">我的钱包</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="menu-text">邀请好友</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span class="menu-text">会员中心</span>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+    <div class="mine-section-title">其他</div>
+    <div class="mine-menu">
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="menu-text">设置</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span class="menu-text">帮助与反馈</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        <span class="menu-text">关于我们</span>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VIDEO DETAIL OVERLAY ===== -->
+<div class="detail-page" id="detailPage">
+  <div class="detail-back" onclick="closeDetail()">
+    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  </div>
+  <div class="detail-video-area">
+    <img id="detailCover" src="" alt="">
+    <div class="play-btn">
+      <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    </div>
+  </div>
+  <div class="detail-content">
+    <div class="detail-tabs">
+      <div class="detail-tab active">简介</div>
+      <div class="detail-tab">评论</div>
+    </div>
+    <div class="detail-intro">
+      <div class="detail-title" id="detailTitle"></div>
+      <div class="detail-tags" id="detailTags"></div>
+      <div class="detail-actions">
+        <div class="left" id="detailPlayCount"></div>
+        <div class="right">
+          <div class="detail-action-item" id="detailLike">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            <span></span>
+          </div>
+          <div class="detail-action-item" id="detailCollect">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <span></span>
+          </div>
+          <div class="detail-action-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span>分享</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-recommend">
+      <div class="section-title">相关推荐</div>
+      <div class="video-grid" id="detailRecommend"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BOTTOM TAB BAR ===== -->
+<div class="tab-bar">
+  <div class="tab-item active" onclick="switchTab('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>主页</span>
+  </div>
+  <div class="tab-item" onclick="switchTab('douyin')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    <span>抖音</span>
+  </div>
+  <div class="tab-item" onclick="switchTab('mine')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>我的</span>
+  </div>
+</div>
+
+<script>
+const BASE_URL = 'https://d3vfkhk0c6rox6.cloudfront.net';
+
+// Embedded video data
+const DATA = {"categories":{"热门":[{"id":"68fc8a086479be6e1a755872","title":"〔骑乘女护士〕主任保养的骚货小护士，沙发上骑乘后入啪啪，护士制服诱惑","cover":"cf230705/image/228/d6/2t7/40/76870bc3147cfd348a55c30a28994b8b.png","playCount":193446,"playTime":1406,"likeCount":429,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","后入","口交"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["热门"]},{"id":"66dfbda4036ad9f79eb18a86","title":"【闺房正能量】破解9位学生妹家庭生活日常学习","cover":"bf211222/image/l2/2cv/2ja/2eb/8934a4d69db0bed64db7ad09bd9bc780.jpg","playCount":473319,"playTime":789,"likeCount":132,"commentCount":3,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["国产","学生","偷拍"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["热门"]},{"id":"6853e0afb0809bc0422e402f","title":"职场升职记  将骚穴内射满浓精","cover":"cf230705/image/2ci/1xl/11g/9j/f2f5b2d2a505e32878b35c43cd5d72d2.png","playCount":25938,"playTime":1262,"likeCount":99,"commentCount":-1,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["后入","口交","内射"],"newsType":"SP","publisher":{"name":"苗娴","portrait":"image/bt/9e/7m/5v/769b3176550c474d96e97f3269881fe2.jpeg","fans":0},"category":["热门"]},{"id":"6565e4fef4e8e19563a0daa6","title":"[人兽乱伦]人禽母兽，金发婊乱伦狗狗","cover":"cf230705/image/1bs/1fd/2qf/1ne/e09b2f6cde5a41c0d39d50877820530d.jpg","playCount":2534994,"playTime":576,"likeCount":1617,"commentCount":44,"collectCount":0,"coins":55,"originCoins":55,"freeArea":false,"tags":[""],"newsType":"SP","publisher":{"name":"段醉波","portrait":"image/93/5z/ey/wk/5cfffdee29e44a3ea2fe15af593fcbc0.jpeg","fans":0},"category":["热门"]},{"id":"66cc2a9a2a51a6d65b5690b0","title":"内射18岁女高中生 白哲粉嫩童颜巨乳精液灌满了她的嫩逼","cover":"cf230705/image/as/zr/1qr/2nk/d0887e3d7802445e0c4e8eea2df40036.jpg","playCount":235917,"playTime":3005,"likeCount":363,"commentCount":0,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["萝莉","内射","学生萝莉"],"newsType":"SP","publisher":{"name":"鄂娜","portrait":"image/lq/e6/h4/rz/d72c98252c9548e598754ad5060120d7.jpeg","fans":0},"category":["热门"]},{"id":"6511875551395e1ffeb3feba","title":"#霸凌 合集 #校园 #殴打 #裸体 小孩子下手就是没轻没重的 超长合集","cover":"bf211222/image/1d8/98/269/1lg/8c1911fd771241765cb38d65d29d8998.jpg","playCount":1302444,"playTime":1360,"likeCount":297,"commentCount":9,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["学生","网曝门","霸凌"],"newsType":"SP","publisher":{"name":"冀园","portrait":"image/os/nt/yk/np/11e294daa935467a84df6aafe952302d.jpg","fans":0},"category":["热门"]},{"id":"6721ef652d0223ee7af4cb26","title":"【小萝莉群P淫乱】一堆00后小萝莉超嫩粉穴振动棒抽插，按住双腿爆操煤，骑乘姿势爆操","cover":"bf211222/image/1kp/2co/1nl/17b/8db44546e26d9f274d4865a50b6f093e.jpg","playCount":416988,"playTime":3890,"likeCount":297,"commentCount":0,"collectCount":0,"coins":70,"originCoins":70,"freeArea":false,"tags":["萝莉","群P","骑乘"],"newsType":"SP","publisher":{"name":"桑莲","portrait":"image/j4/tm/b1/f8/2f3c6ea9472f4b86a10b8a17626ca71f.jpeg","fans":0},"category":["热门"]},{"id":"66e8fb35036ad9f79eb1d42d","title":"激情换妻淫乱无比，眼镜淫妻特别","cover":"cf230705/image/34q/1ec/2r1/309/538c5f106ff8af32cfc29b4d8fbec22e.jpg","playCount":770616,"playTime":1751,"likeCount":264,"commentCount":4,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["人妻","自拍","3P"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["热门"]},{"id":"6990532d670bc18f021e8da4","title":"阿姨给少年的性教育#TGJX","cover":"cf230705/image/9e/17h/25v/2el/fdf0892b5e96fa659ce08159549c65aa.jpg","playCount":308088,"playTime":507,"likeCount":1188,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["国产","调教","亚洲人"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["热门"]},{"id":"69ba7c22950b127f4e297f79","title":"acfan网红母狗调教大神小狗饲养员新作_兔子警官_极品女神被调教","cover":"ims/k12p/c92a/e45e/70ef/9f5dca88f5f0bee7ed32e4f323947b2d.jpg","playCount":274032,"playTime":1055,"likeCount":1353,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["国产","巨乳","cosplay"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["热门"]},{"id":"66d2934bee1f33615dbba29a","title":"【监控破解】医院妇产科监控破解_完美角度_高清拍摄孕妇产娃_生娃篇章–3","cover":"cf230705/image/2z3/1u0/254/8r/1edd220fe0e926ade0c8b29b0e6decf4.jpg","playCount":1033164,"playTime":3465,"likeCount":1386,"commentCount":3,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["孕妇母乳"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["热门"]},{"id":"6535ec7029a3f62c782d578a","title":"硬核厕拍系列，精挑细选10位人美逼粉小姐姐","cover":"cf230705/image/2pb/1h/33v/29h/126af2cd8e13230f6724edf221fecaf7.jpg","playCount":675675,"playTime":2395,"likeCount":396,"commentCount":2,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["学生","学生","偷拍"],"newsType":"SP","publisher":{"name":"舒敏智","portrait":"image/gn/zg/40/f8/b5b10cea7c44448ab3df31db705aa8b8.jpeg","fans":0},"category":["热门"]}],"国产":[{"id":"6625e6e799512c7eebc0ab8a","title":"【精选探花】3800约操极品短发妹子，完美身材罕见尤物","cover":"cf230705/image/4a/kq/6w/17p/21809edc0ae3c82d63acc9b33a846bcf.jpg","playCount":1052766,"playTime":2082,"likeCount":1089,"commentCount":5,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["国产","网红","后入"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产"]},{"id":"672061c22d0223ee7af4ab4c","title":"兔牙美眉娇俏可爱美女内射溢出要吃紧急避孕药","cover":"cf230705/image/222/2gh/q5/2zo/502182385ae1d364e4024ca747e9c48d.jpg","playCount":62766,"playTime":1319,"likeCount":231,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["探花","偷拍","内射"],"newsType":"SP","publisher":{"name":"施兴国","portrait":"image/xa/a2/gs/dz/406b619f79684992837334ec2c21cffb.jpeg","fans":0},"category":["国产"]},{"id":"67f5ebced707e8c945343ae0","title":"大马路中间群交!三只骚母狗酒后逼瘾犯了就地解决","cover":"cf230705/image/7d/ln/1vq/1g/85a04ae38b721d66516d0df1c1733c3e.JPG","playCount":201465,"playTime":3575,"likeCount":429,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["户外"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产"]},{"id":"660431aa400101ec51eb66bf","title":"步行街极限抄底各种气质漂亮潮妹，诱人黑丝","cover":"cf230705/image/2d8/2su/192/2yi/2afe92ceea5f3e6428daafdc461e963a.jpg","playCount":388278,"playTime":1664,"likeCount":330,"commentCount":2,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["裙底街射"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产"]},{"id":"685bad7a9ecc763351b5de8a","title":"【黑料泄密】抖音安安呀私下裸聊录屏流出","cover":"cf230705/image/1xx/27r/1fm/27d/dd2e519f933b22df019283cae6ece2ab.png","playCount":39600,"playTime":947,"likeCount":132,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["裸聊直播"],"newsType":"SP","publisher":{"name":"宇文磊","portrait":"image/vo/g9/nj/l2/f288707eeb9041b8b471f0ac5f25fcdd.jpeg","fans":0},"category":["国产"]},{"id":"667a71a5b143ab165c497ac2","title":"【情侣自拍泄密】大学情侣周末激情性爱，学妹骑乘表情销魂，男友最后用嘴把骚逼舔爽了","cover":"cf230705/image/2qj/1w4/2p0/29y/9a1d25d135b992f0f41b09e584cbb76c.png","playCount":161667,"playTime":746,"likeCount":132,"commentCount":1,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["国产","内射","口爆"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产"]},{"id":"66faa6b4036ad9f79eb27528","title":"女神主播-高颜值反差婊巨乳网红女神口交诱惑","cover":"cf230705/image/2g5/2sl/dv/1y8/c8e6da48d1c0f01d7742c00abba07edd.jpg","playCount":256410,"playTime":965,"likeCount":198,"commentCount":2,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["网红","自慰","丝袜"],"newsType":"SP","publisher":{"name":"葛清","portrait":"","fans":0},"category":["国产"]},{"id":"656e9f1495ca90d781526ead","title":"两个少妇女同互相舔脚掰穴！高清无码","cover":"cf230705/image/20g/pv/243/x9/6d1179d6308b1587e4dea46b311ce774.jpg","playCount":920601,"playTime":2159,"likeCount":1023,"commentCount":4,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["国产","诱惑","反差婊"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产"]},{"id":"66192dbf37afd9a99e7570a8","title":"【自拍流出】小情侶熱戀期和36F巨乳女友做愛_無毛粉穴_一會兒工夫來兩炮_啪啪幹出白漿","cover":"cf230705/image/2dd/21u/ns/2wv/29a4de31b52646855a2ceb8370b2f435.jpg","playCount":861795,"playTime":964,"likeCount":396,"commentCount":3,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["国产"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产"]},{"id":"672c3911bae2b02c499bf945","title":"精选探花-约操极品长腿丰满美人妻","cover":"cf230705/image/rm/2ls/13e/m/69f40bfdc697607f9aed0f727921ce05.jpg","playCount":136917,"playTime":1918,"likeCount":132,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["品茶约炮"],"newsType":"SP","publisher":{"name":"沃功","portrait":"","fans":0},"category":["国产"]},{"id":"67931a0eab223929739c608f","title":"淫荡孕妇不知道被谁搞大肚子,找一个跑友合作黄播赚奶粉","cover":"ims/k12p/3123/96a3/7d06/2099b65c318beca6cf1fc7f03dff9bac.png","playCount":138501,"playTime":1898,"likeCount":99,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["淫荡孕妇"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产"]},{"id":"6621ea5599512c7eebc0860a","title":"-万人求·真实女同性恋舌吻69互赫-这个是真的却激看着京败救汉白巴爽』","cover":"cf230705/image/25g/xp/b7/331/4f16a2497562ce349fc3afd03d38e960.jpg","playCount":294723,"playTime":3400,"likeCount":264,"commentCount":3,"collectCount":0,"coins":50,"originCoins":50,"freeArea":false,"tags":["国产","女同","制服诱惑"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产"]}],"国产AV":[{"id":"6544fdf155e6c8ab96b6f9a8","title":"MD-0296 萌妹慘被無限高潮開發 温芮欣","cover":"ims/media_covers/5531/6512/a2ef/ac086683688a43decc5cbb75b996ac82.jpg","playCount":326898,"playTime":3360,"likeCount":132,"commentCount":5,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["麻豆传媒","国产","萝莉"],"newsType":"SP","publisher":{"name":"危茂勋","portrait":"image/b6/xx/a1/py/610abce41bed48a2bf7dc813dc1c878f.jpeg","fans":0},"category":["国产AV"]},{"id":"6657f8c927e094952c93ab71","title":"RAS-170老湿姬米砂真实故事","cover":"ims/media_covers/0781/751d/33e7/eba43aa7fc2c34786608d4cdab205311.jpg","playCount":70290,"playTime":2583,"likeCount":99,"commentCount":1,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["国产","后入","口交"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产AV"]},{"id":"6822ef0f74706631feb80286","title":"RAS-0338误闯黑丝姐姐闺房绝伦美尻惊喜福利","cover":"ims/media_covers/3123/7d06/02e7/7d3f35901006e10d5eb6e66dd06f5b3b.jpg","playCount":64350,"playTime":2642,"likeCount":198,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["国产","后入","口交"],"newsType":"SP","publisher":{"name":"甜心","portrait":"cf230705/image/294/2x4/2e1/2f0/4b5b0ae7bd6733100cac1e9b29a9b462.jpeg","fans":0},"category":["国产AV"]},{"id":"653a1bdf50c90f70f7b0677d","title":"MT-010 重机女郎的淫威-女王的征服性爱","cover":"ims/media_covers/3A82/6512/33E7/25e2ac5129dc9ce83ac8b7f72b629032.png","playCount":102663,"playTime":1782,"likeCount":33,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["麻豆传媒","国产","御姐"],"newsType":"SP","publisher":{"name":"向彪","portrait":"image/io/l9/b5/yp/8492d68a84af4f73bd467092b07f9f98.jpg","fans":0},"category":["国产AV"]},{"id":"66f15f21036ad9f79eb21607","title":"兔子先生TZ-144兔子按摩院EP10长腿巨乳贴身服务","cover":"ims/media_covers/0781/0a80/3769/103148c0b15badbe1c395a15d5eeaf00.jpg","playCount":200376,"playTime":1561,"likeCount":429,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["兔子先生","国产","后入"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产AV"]},{"id":"6659c9c927e094952c93c195","title":"[ThZu.Cc]MFK-0068黑丝浪女的足交诱惑","cover":"ims/media_covers/0781/751d/c16a/fcd1296b13199e16449073759b42a80e.jpg","playCount":118602,"playTime":2677,"likeCount":33,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","后入","口交"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产AV"]},{"id":"680217248a8faf7805198b78","title":"我回来了EP2人群背后的玩火露出苏畅","cover":"ims/k12p/0781/c20a/1f0e/c8661b352d31b2931a61888d6f5988f8.jpg","playCount":174240,"playTime":1293,"likeCount":330,"commentCount":1,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["麻豆传媒","麻豆传媒"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产AV"]},{"id":"66719220e0502a2b39088dd8","title":"大像传媒之素人搭讪企划清纯大学生-依莫","cover":"ims/media_covers/0781/faea/6f49/b5932524334ca54712248d9c9ecd2647.jpg","playCount":260964,"playTime":2190,"likeCount":198,"commentCount":1,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","学生","后入"],"newsType":"SP","publisher":{"name":"大象传媒","portrait":"image/kk/v2/yk/wd/12b9f5e2dfff4081b2cf86b21ed62afb.jpeg","fans":0},"category":["国产AV"]},{"id":"650e689fcf6cf7ee48389ce3","title":"PM030-清纯OL绑架轮奸","cover":"cf230705/image/2lo/2ul/2wi/2y6/ec83ec4e01be53577eb88fe5e2a3fac8.jpg","playCount":313632,"playTime":1639,"likeCount":198,"commentCount":1,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","3P","OL"],"newsType":"SP","publisher":{"name":"扶健","portrait":"image/xp/hs/ln/lv/8dac966232fc424eb25714af63200c00.jpeg","fans":0},"category":["国产AV"]},{"id":"66d81fa6ee1f33615dbbd6af","title":"色情上门烘焙师  做烘焙只是我工作的一部分 和不同已婚男人发生关系才是我的爱好/糖心Vlog","cover":"cf230705/image/2hv/13k/2do/1yo/294791cf261cb348ecb9c8fa1ec0e110.jpg","playCount":335610,"playTime":3890,"likeCount":396,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["国产","糖心Vlog"],"newsType":"SP","publisher":{"name":"老王精选","portrait":"cf230705/image/2bu/1hx/1lv/2ho/a18bb355799cc201a1b6ddb4f987a327.jpg","fans":0},"category":["国产AV"]},{"id":"6552ee5f551bf56ec540d8d2","title":"精选-JVIDS级极品美乳长腿素人现役大学生搭公车 遭痴汉正面紧贴性骚","cover":"cf230705/image/1ec/1rf/2qk/fp/7939ee8ab9913af2cab57520040538b0.jpg","playCount":574002,"playTime":387,"likeCount":726,"commentCount":5,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["国产","学生","后入"],"newsType":"SP","publisher":{"name":"季树","portrait":"image/v8/a5/x2/fi/383c2f67d6c54852a1842c2f5db2f22b.jpeg","fans":0},"category":["国产AV"]},{"id":"652761fe29a3f62c782d0f66","title":"兔子先生之足球宝贝EP3AV篇","cover":"ims/quandan_images/9m/39/us/cd33deac65f052a9c441633611890254.jpg","playCount":104445,"playTime":1890,"likeCount":33,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["兔子先生","国产","原创"],"newsType":"SP","publisher":{"name":"弘忆南","portrait":"image/wi/be/m8/ic/ba0258ae23f34f0f831f67c94a4923c7.jpg","fans":0},"category":["国产AV"]}],"主播":[{"id":"67299053bae2b02c499bdccb","title":"轻熟女主播-风韵犹存气质女神少妇 ‘’啊啊啊好想操她；","cover":"cf230705/image/2re/hc/1fd/1x0/0bf9f22d62095713354ecc6d1a525795.jpg","playCount":188793,"playTime":1900,"likeCount":660,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["裸聊直播"],"newsType":"SP","publisher":{"name":"潘生","portrait":"image/ya/jr/4r/63/0835ff2b18094ff5b714a0371c141805.jpeg","fans":0},"category":["主播"]},{"id":"6777978278bcb26e90581b9a","title":"大眼睛极品妹子露脸精彩大秀丝袜高跟无毛逼撩骚","cover":"ims/k12p/0781/c20a/c16a/bde6908f8829aa4890a238dc766ac585.jpg","playCount":12474,"playTime":1658,"likeCount":66,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["丝袜","丝袜","丝袜"],"newsType":"SP","publisher":{"name":"元嘉禧","portrait":"","fans":0},"category":["主播"]},{"id":"670f354d7d3831e16ebc3861","title":"为了钱出卖处女膜直播，从小穷怕了好不容易考上大学卖身赚学费","cover":"cf230705/image/95/2gu/6b/2wv/2d34eb0e169f932acdb3b5adf559c39d.jpg","playCount":35838,"playTime":2486,"likeCount":0,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["学生","后入","口交"],"newsType":"SP","publisher":{"name":"潘生","portrait":"image/ya/jr/4r/63/0835ff2b18094ff5b714a0371c141805.jpeg","fans":0},"category":["主播"]},{"id":"6712351d7d3831e16ebc64fd","title":"肤白貌美极品御姐女神被纹身小哥爆操，后入大屁股浪叫呻吟表情好骚颜射 ","cover":"cf230705/image/23/fu/23d/352/c7d3f76fe0331d4534999453ab44bb0b.jpg","playCount":17820,"playTime":3417,"likeCount":99,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["御姐","偷情约炮","后入"],"newsType":"SP","publisher":{"name":"潘生","portrait":"image/ya/jr/4r/63/0835ff2b18094ff5b714a0371c141805.jpeg","fans":0},"category":["主播"]},{"id":"6720580d2d0223ee7af4a90f","title":"【神级女神】内容精彩无尿点，全程高能，撸点极高！","cover":"bf211222/image/2b8/1fi/wn/2pb/34c7d8ce290f71c7d53c85e407547e85.jpg","playCount":159885,"playTime":1717,"likeCount":660,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","口交","女神"],"newsType":"SP","publisher":{"name":"潘生","portrait":"image/ya/jr/4r/63/0835ff2b18094ff5b714a0371c141805.jpeg","fans":0},"category":["主播"]},{"id":"69b16a6bf97d311645e88860","title":"免费福利-极品尤物美少女激情自慰诱惑来袭-","cover":"cf230705/image/2l5/sd/1f5/2w/ab3d66930bfcfba1a50b94edf04eae43.jpg","playCount":19404,"playTime":1680,"likeCount":198,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["自慰","性奴","卧室"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["主播"]},{"id":"671b1e842d0223ee7af4617b","title":"网红反差婊大合集泄密流出","cover":"cf230705/image/2kq/1mj/1a8/2mu/a20be82d693e6ea78cd0dda8d68be11c.jpg","playCount":74547,"playTime":2884,"likeCount":297,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["网红","自慰","丝袜"],"newsType":"SP","publisher":{"name":"蓝含玉","portrait":"image/5e/i3/qi/81/0a0ecd64f6f24339aeb5614e5c631dbc.jpeg","fans":0},"category":["主播"]},{"id":"67135ee37d3831e16ebc7994","title":"【极品御姐】丝袜高跟御姐伺候蒙面大哥啪啪，多体位蹂躏爆操，表情好骚好刺激","cover":"cf230705/image/31k/2fy/20t/s4/b00eb0f5cf24cb9867b19d4cc82cd946.jpg","playCount":73062,"playTime":1754,"likeCount":264,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["御姐","口交","丝袜"],"newsType":"SP","publisher":{"name":"潘生","portrait":"image/ya/jr/4r/63/0835ff2b18094ff5b714a0371c141805.jpeg","fans":0},"category":["主播"]},{"id":"669247a25a857a53b1dc19d3","title":"小妹妹和老妈妈激情母女花大秀4P直播，口交大鸡巴揉奶玩逼，被两个小哥一起抽插爆草，浪叫呻吟不止精彩","cover":"cf230705/image/1nj/2du/2j1/ix/1cb38b8a811e388c9a0d03b2dd53a530.jpg","playCount":423225,"playTime":1884,"likeCount":396,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["裸聊直播"],"newsType":"SP","publisher":{"name":"寇滢","portrait":"image/iw/yb/ae/1z/1148566fea234b589f4d96737d0ae983.jpg","fans":0},"category":["主播"]},{"id":"671c66662d0223ee7af4745c","title":"大学生下海直播被操闺蜜在旁边看着好姐妹被操，忍不住吃鸡巴","cover":"cf230705/image/1bp/2vx/wb/3s/0cab4d52092b10668052e9de888ea7ce.jpg","playCount":156618,"playTime":1818,"likeCount":297,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["国产","主播","自拍"],"newsType":"SP","publisher":{"name":"凤兴昌","portrait":"image/ex/yb/so/l0/5011e1a5415c400783ab5d29d1d68129.jpeg","fans":0},"category":["主播"]}],"AV":[{"id":"68caaa28a1b136fc27137924","title":"SDMM-006 快捷键OL而已！一个孩子气的女上司和一个男下属独自在新乳液的监控体验中！不经意间变成乌龟的真子学长，有着不总是可靠的小坤的大公鸡，认真开枪不作弊的快感！魔镜","cover":"cf230705/image/2wm/91/rt/24d/7068bbed3573fb3028ba4d40439e1e6d.jpg","playCount":79992,"playTime":8411,"likeCount":198,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["日本","魔镜号"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["AV"]},{"id":"690340d06479be6e1a7576cd","title":"JUQ-961我让我妻子在街角站了一个小时，她就站在那里。-木村丽-木村玲衣-木村玲衣_WMLC_AV","cover":"ims/k12p/3123/96a3/c51c/0d950614555f2762176f604f1577e310.jpg","playCount":121968,"playTime":8651,"likeCount":165,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["巨乳","木村玲衣","人妻"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["AV"]},{"id":"69206e626479be6e1a761646","title":"Meyd-947梦美香苗参加了一场17小时的耐力约会，她被迫屈服于家乡的虐待狂男人。-梦实かなえ-梦实かなえ_WMLC_AV","cover":"ims/k12p/3123/96a3/c20a/084d3016732d5c1f28aceb7139ec4043.jpg","playCount":137808,"playTime":11156,"likeCount":726,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["人妻","熟女","中出"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["AV"]},{"id":"691b254e6479be6e1a75d959","title":"MIMK-217 真人版：我跟老公的继子闹矛盾了。我每天都被一个噁心又淫荡的性爱怪物那根贪得无厌的鸡巴侵犯……佐山爱","cover":"cf230705/image/20z/zc/1e1/1yp/5a1c32d354e948b21888d0f693141c73.jpg","playCount":3736062,"playTime":7240,"likeCount":8250,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["内射","日本","超乳"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["AV"]},{"id":"6968dafc4788f348ecfb9d66","title":"【无码流出】IPX-867 Karen的口交令人無法抗拒，我會失去理智......一個美麗的蕩婦老師Kaede Karen","cover":"ims/media_covers/5531/d3d9/3769/fb8d4577c2c547e572c8bab973983da2.jpg","playCount":115236,"playTime":8915,"likeCount":528,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["熟女","后入","口交"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["AV"]},{"id":"68075599aedd904988ce23be","title":"【奇葩】第42部裸体芭蕾舞，裸体钢管舞很常见，裸体芭蕾舞确实比较少见，挺有意思的，并且可以解锁更多姿势_OMSF","cover":"ims/k12p/0781/0a80/d72d/d31b797568ef5d70ea604ee7614d88b5.jpg","playCount":550638,"playTime":9526,"likeCount":1551,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["日本","猎奇","AV"],"newsType":"SP","publisher":{"name":"陶德","portrait":"image/nu/e3/54/ve/8f84072aca274f319b4e8c6b18a7f016.jpeg","fans":0},"category":["AV"]},{"id":"68075792aedd904988ce23d0","title":"【奇葩】第11部吊在这种地方重口味SM真的危险，其中扯夹子那一段甚是疼痛，让我印象深刻，这玩的太狠了_OMSF","cover":"ims/k12p/0781/0a80/d72d/0c56c8b6b3a3ec5c74b3ba4a98d1336c.jpg","playCount":140976,"playTime":6159,"likeCount":561,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["日本","猎奇","AV"],"newsType":"SP","publisher":{"name":"陶德","portrait":"image/nu/e3/54/ve/8f84072aca274f319b4e8c6b18a7f016.jpeg","fans":0},"category":["AV"]},{"id":"69baa356950b127f4e29817a","title":"FC2-PPV-4577253S级1级8岁-老-nyanko美女。一个和别人相似的男性朋友，一个利他的朋友，一个身体不健康的朋友，…_WMLC","cover":"ims/k12p/3123/96a3/98f1/b1425d632b1189d6054cc96ae1529a3a.jpg","playCount":9504,"playTime":4563,"likeCount":66,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["FC2","自拍","MISSAV"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["AV"]},{"id":"69bd520bdd3810c5bf635738","title":"住在隔壁的女大学生是个著名的极度色情自慰主播_有一天_她突然来借我的鸡巴_结果我们一起直播了_简直是梦想成真_早坂姬","cover":"ims/k12p/c92a/a2ef/02e7/b9df9017e0f74e3d5355aaba11354dec.jpg","playCount":165132,"playTime":6936,"likeCount":693,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["MISSAV"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["AV"]},{"id":"69834b01f13775944da5cfcd","title":"IPX-118 对主人的命令绝对服从的女仆 相泽南 中文字幕","cover":"ims/quandan_images/f6/ty/bw/6c299f8a7552849a7b11640145584022.jpg","playCount":92070,"playTime":9009,"likeCount":1188,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["学生","颜射","女仆"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["AV"]},{"id":"68a5cddf6d9fc0025b7f47b1","title":"juq-969我想让我的妻子承认我的爱，所以我让她和我不忠的后辈单独呆了三个小时......我的ntr故事次阴道射精镜头，没有拉出玛丽玛丽-橘玛丽_WMLC_AV","cover":"ims/k12p/3123/96a3/70ef/a79ae26da253d3c10af7bbcd1e085e6e.jpg","playCount":119592,"playTime":8594,"likeCount":561,"commentCount":0,"collectCount":0,"coins":58,"originCoins":58,"freeArea":false,"tags":["巨乳","人妻","熟女"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["AV"]},{"id":"68075792aedd904988ce23ec","title":"【奇葩】人类牲畜牧场额外版女子牲畜赛马场_OMSF","cover":"ims/k12p/0781/0a80/faea/ea70a90a7abc486a2c2ba8cca6336fb5.jpg","playCount":664488,"playTime":5411,"likeCount":2079,"commentCount":-1,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["日本","猎奇","AV"],"newsType":"SP","publisher":{"name":"陶德","portrait":"image/nu/e3/54/ve/8f84072aca274f319b4e8c6b18a7f016.jpeg","fans":0},"category":["AV"]}],"Only_Fans":[{"id":"6528c2ac29a3f62c782d1489","title":"柚子猫【卡芙卡欲望黑丝】黑丝美足和祈求被精液内射的嫩穴","cover":"cf230705/image/32w/sm/12e/17f/b74f79bb14136e026c4c464c4d14f237.jpg","playCount":227997,"playTime":1222,"likeCount":495,"commentCount":1,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["柚子猫","网红","丝袜"],"newsType":"SP","publisher":{"name":"邬安康","portrait":"image/nu/e3/54/ve/8f84072aca274f319b4e8c6b18a7f016.jpeg","fans":0},"category":["Only_Fans"]},{"id":"68c956d3a1b136fc27137440","title":"【鸡教练】义妹加奈の后日谈双洞塞满的加奈成为哥哥的肉便器","cover":"ims/k12p/3123/0a80/751d/318c53af9c58640d6fd599b21020151d.jpg","playCount":68508,"playTime":1980,"likeCount":429,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["足交","丝袜","JK"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["Only_Fans"]},{"id":"68b16366171ba5db9f2b1e44","title":"【酥酥】@sheshewu白丝JK骚女儿双具玩弄嫩穴抽插_LLD","cover":"ims/k12p/3123/96a3/a2ef/a91ed52c7dd79e83ec133983dbaedbe1.jpg","playCount":28116,"playTime":631,"likeCount":330,"commentCount":0,"collectCount":0,"coins":66,"originCoins":66,"freeArea":false,"tags":["酥酥"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["Only_Fans"]},{"id":"6884a5ac52403fa2f64fbb32","title":"【玩偶姐姐】纯爱系列-昧玩","cover":"cf230705/image/1xd/16y/2je/1hc/c655004644e74e46fd36750ddbc7a6de.png","playCount":13068,"playTime":598,"likeCount":33,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","后入","口交"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["Only_Fans"]},{"id":"67849d4a1d0138d5cf480c5e","title":"柚子猫cosplay美女床上骚姿诱惑，口交抠逼，无套后入抽插","cover":"ims/k12p/3123/96a3/7d06/183cbd7d5db7b49ef27e3d8c5dfa01d5.jpg","playCount":62667,"playTime":1102,"likeCount":231,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["柚子猫","柚子猫"],"newsType":"SP","publisher":{"name":"邬安康","portrait":"image/nu/e3/54/ve/8f84072aca274f319b4e8c6b18a7f016.jpeg","fans":0},"category":["Only_Fans"]},{"id":"661f4fe337afd9a99e75b5f6","title":"柚子猫可爱美女酒店床上足交，床上各种插逼姿势，叫声淫荡","cover":"ims/media_covers/0781/e45e/c16a/7bbb109762b5cfeeb18ad04665a2c3b6.jpeg","playCount":141273,"playTime":1228,"likeCount":297,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["柚子猫","国产","网红主播"],"newsType":"SP","publisher":{"name":"邬安康","portrait":"image/nu/e3/54/ve/8f84072aca274f319b4e8c6b18a7f016.jpeg","fans":0},"category":["Only_Fans"]},{"id":"678f2555ab223929739c3e96","title":"【无套内射】白丝穴妹口技越来越会_深喉吃鸡侧位中出","cover":"ims/k12p/3123/96a3/96a3/eb0d56124daeeee18368f1d63bd43d69.jpg","playCount":216909,"playTime":550,"likeCount":594,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["唐伯虎","唐伯虎"],"newsType":"SP","publisher":{"name":"唐伯虎","portrait":"bf211222/image/1ey/2ou/xd/20q/d1f38f70da8221e02aaef69079b8e06a.jpeg","fans":0},"category":["Only_Fans"]},{"id":"67627d30ad43a0a8c4a5a310","title":"樱花小猫被班主任调教成为性奴小黑屋尽情玩弄小母狗情趣吊床炮机轰穴狂肏性奴肉便器","cover":"ims/k12p/0781/c20a/c74d/05a857c91ec92f57a61726c95eb36e0a.jpg","playCount":33363,"playTime":500,"likeCount":0,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["樱花小猫"],"newsType":"SP","publisher":{"name":"那高扬","portrait":"image/aw/2s/0m/q6/f5ed0dff4e604492b07b904bbe8e6176.jpeg","fans":0},"category":["Only_Fans"]},{"id":"677dfd7b78bcb26e905842d5","title":"8约了个洛丽塔妹妹去天台拍写真，兽欲上身直接后入中出她","cover":"ims/k12p/0781/c20a/aab3/81870d2501479e4c46b89c03c930338b.jpg","playCount":54648,"playTime":695,"likeCount":132,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["樱花小猫"],"newsType":"SP","publisher":{"name":"那高扬","portrait":"image/aw/2s/0m/q6/f5ed0dff4e604492b07b904bbe8e6176.jpeg","fans":0},"category":["Only_Fans"]},{"id":"68071fb69f01df01782e1dda","title":"香港反差婊博主奶咪 anaimiya（Naimi奶咪） 花裙肉丝沙发自慰 OFZYCB277","cover":"cf230705/image/2ls/1u6/1un/1hg/cffa5e702024502c573d3090574cb641.jpg","playCount":32472,"playTime":1291,"likeCount":231,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["御姐","真实自拍","自慰"],"newsType":"SP","publisher":{"name":"蔡伟","portrait":"image/qs/sr/wk/in/5bbb7ad2c13143e0b226a407c4b38f90.jpeg","fans":0},"category":["Only_Fans"]},{"id":"68c2cdc7171ba5db9f2b3e7f","title":"TX【甜心宝贝】护士表妹给我”深入检查“鸡巴","cover":"ims/k12p/3123/0a80/751d/5df59886d8b2d35c243bf7c78cef66d1.jpg","playCount":11088,"playTime":1472,"likeCount":0,"commentCount":0,"collectCount":0,"coins":66,"originCoins":66,"freeArea":false,"tags":["网红","巨乳","JK"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["Only_Fans"]},{"id":"678221b178bcb26e90586247","title":"福利-精选极品流出，台湾网红‘粉红兔’最新剧情流出","cover":"ims/k12p/0781/c20a/9bf3/aae11154e2e4ef6d1a434d95326b4160.jpg","playCount":31482,"playTime":927,"likeCount":66,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["台湾粉红兔"],"newsType":"SP","publisher":{"name":"邢华","portrait":"image/98/fo/dt/ab/c135c176a23445a899595ec32667582d.jpeg","fans":0},"category":["Only_Fans"]}],"欧美":[{"id":"6528c49c29a3f62c782d14bd","title":"【中文字幕】这样的丰满肉弹御姐实在是无法抵挡啊 大屁股好身材软软销魂坐在鸡巴上起伏碰撞太爽了啪啪猛烈抽操","cover":"cf230705/image/30f/2ky/147/wh/cabac4b73521901b18db9329ef221efe.jpg","playCount":328779,"playTime":1561,"likeCount":594,"commentCount":0,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["欧美","女神","丰满"],"newsType":"SP","publisher":{"name":"戚树","portrait":"image/0b/4n/ct/hs/9d84d100aba340558f68e638e45c6203.jpeg","fans":0},"category":["欧美"]},{"id":"650845a7f30cc205c57fdc8f","title":"重组家庭淫荡小妹学生制服勾引哥哥乱伦犯罪【欧美乱伦】","cover":"cf230705/image/190/ca/cz/1qi/c44644777e36e14d91464230b0b85c44.JPG","playCount":218988,"playTime":2313,"likeCount":759,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["欧美","兄妹","勾引"],"newsType":"SP","publisher":{"name":"麴嘉慕","portrait":"image/4b/w1/qx/je/562ad286a18c473d952be1d421199a8c.jpg","fans":0},"category":["欧美"]},{"id":"689c477a2c488c6118edaf9c","title":"少女美人计_TeenHoneyTrap_NUT_EA","cover":"ims/k12p/0781/fad6/96a3/321374a91e079829e102345b24a1564b.jpg","playCount":24156,"playTime":2360,"likeCount":99,"commentCount":0,"collectCount":0,"coins":58,"originCoins":58,"freeArea":false,"tags":["欧美","后入","口交"],"newsType":"SP","publisher":{"name":"欧美精选","portrait":"image/c0/k5/ks/tm/b4d00a34c59e4cfe9eb2d4b7ac09d8a0.jpg","fans":0},"category":["欧美"]},{"id":"68fb50846479be6e1a754bc6","title":"足球运动员幕后花絮家庭主妇_Making-Of-FootballersHousewives_NUT_EA","cover":"ims/k12p/0781/fad6/96a3/60e38cbffaacac6ab3ea2b0da45dac41.jpg","playCount":14454,"playTime":1797,"likeCount":132,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["欧美","后入","内射"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["欧美"]},{"id":"6929a6fef8accb925da6928a","title":"操Abella的大屁股_FuckingAbella’sGreatAssInPOV_NUT_EA","cover":"ims/k12p/0781/fad6/96a3/e31d61122f4980d51ddccecf67c58e33.jpg","playCount":20790,"playTime":2453,"likeCount":66,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["欧美","后入","口交"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["欧美"]},{"id":"69b95659950b127f4e2975f3","title":"高颜值白皙美乳美腿白虎粉嫩小穴双美穴粘液拉丝#PZJX","cover":"cf230705/image/26g/dm/242/ya/c5904b8338ca676726a1dcb1ab749071.jpg","playCount":6930,"playTime":752,"likeCount":33,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["后入","女神","白虎"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["欧美"]},{"id":"6566b833f4e8e19563a0e509","title":"淫语拿捏远房表姐，被表弟骚话挑逗湿了一片一脸娇羞，粉嫩白虎少女被草哭【欧美姐弟乱伦","cover":"cf230705/image/qj/24u/ja/2vg/e36a37edf2c412f32cfd43cdb7b5c261.JPG","playCount":1408077,"playTime":1365,"likeCount":858,"commentCount":11,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["欧美","乱伦","姐弟"],"newsType":"SP","publisher":{"name":"卫白凝","portrait":"image/mt/1v/u6/92/7e38e19be5c642d8802328e9f3d5287f.jpeg","fans":0},"category":["欧美"]},{"id":"6938193af8accb925da6da02","title":"AnissaKate：完美三人行_AnissaKate:Perfectthreesome_NUT_EA","cover":"ims/k12p/0781/fad6/96a3/83ecfbaf66dfc4fc4dca7525653eebea.jpg","playCount":23364,"playTime":2202,"likeCount":132,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["欧美","后入","口交"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["欧美"]},{"id":"6807132c5cbf7982b1807789","title":"白俄罗斯白虎少女长腿玉足多人混交大战超刺激","cover":"cf230705/image/1jg/2tx/2k7/qx/b0fdf97ecffde85ada248c554dc041c1.JPG","playCount":297792,"playTime":2982,"likeCount":1287,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["欧美","姐妹花","极品"],"newsType":"SP","publisher":{"name":"宗政毓","portrait":"image/22/y8/7r/ji/e55f4f8e994240aabd44156adcddad34.jpeg","fans":0},"category":["欧美"]},{"id":"651e356e29a3f62c782cf45f","title":"【中文字幕】成熟丰满御姐真是尤物啊 有身材有颜值有情趣黑丝高跟销魂情欲姿势男人看了抵挡不住沦陷啪啪猛烈抽操干","cover":"cf230705/image/1he/eb/2lq/1cy/bcaecfa4c7ce5f55483c85914b682e1a.jpg","playCount":207999,"playTime":2398,"likeCount":594,"commentCount":1,"collectCount":0,"coins":80,"originCoins":80,"freeArea":false,"tags":["欧美","御姐","户外"],"newsType":"SP","publisher":{"name":"戚树","portrait":"image/0b/4n/ct/hs/9d84d100aba340558f68e638e45c6203.jpeg","fans":0},"category":["欧美"]},{"id":"6967946e4788f348ecfb8965","title":"诱惑桑拿_SaunaofSeduction_NUT_EA","cover":"ims/k12p/0781/d72d/c16a/2996ec84523f3c61a532176638ed93f9.jpg","playCount":9306,"playTime":1351,"likeCount":66,"commentCount":0,"collectCount":0,"coins":68,"originCoins":68,"freeArea":false,"tags":["指交","舔逼","御姐"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["欧美"]},{"id":"68fb50836479be6e1a754b92","title":"钱_Money_NUT_EA","cover":"ims/k12p/0781/fad6/96a3/32d5f9f80a83d3be422136d54d141f55.jpg","playCount":32472,"playTime":9503,"likeCount":132,"commentCount":0,"collectCount":0,"coins":0,"originCoins":0,"freeArea":false,"tags":["欧美","内射","丝袜"],"newsType":"SP","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":0},"category":["欧美"]}]},"shortVideos":[{"id":"681b638805828daa49ed4bda","title":"23岁技师上门服务","cover":"cf230705/image/1w8/1v8/2g7/21a/7ee891e852338b7e75fd35d7de875ff6.jpg","playCount":200970,"playTime":261,"likeCount":429,"commentCount":0,"collectCount":11,"coins":30,"originCoins":30,"freeArea":false,"tags":["制服","诱惑"],"newsType":"SHORT","publisher":{"name":"堵薇","portrait":"image/22/if/19/fv/06feb171aa674088bb2fb953542312fe.jpeg","fans":590},"category":["推荐"]},{"id":"6815cc65045fa89161067e12","title":"强奸极品黑丝美穴女友","cover":"bf211222/image/nu/2oi/2k9/s6/23bc9741fa6204e4e06cd0f737a4f17b.jpg","playCount":696564,"playTime":77,"likeCount":5379,"commentCount":0,"collectCount":112,"coins":30,"originCoins":30,"freeArea":false,"tags":["强奸"],"newsType":"SHORT","publisher":{"name":"荣亦瑶","portrait":"image/o7/jh/1m/al/df54ecbd6e004690a714c4a8bd11b355.jpeg","fans":93},"category":["推荐"]},{"id":"6974b7e9f031c432e0be99b0","title":"‘我不要，别拍了，你就会欺负我","cover":"cf230705/image/fz/93/49/ib/75a87b6a6349714adb4191dd1b45cf0e.jpeg","playCount":65142,"playTime":203,"likeCount":957,"commentCount":0,"collectCount":32,"coins":0,"originCoins":0,"freeArea":false,"tags":["后入","人妻"],"newsType":"SHORT","publisher":{"name":"谈宜俊","portrait":"image/4f/ih/i6/rc/6b43a89e9df64d1cbf2f8fa19468f921.jpeg","fans":2188},"category":["推荐"]},{"id":"68b6e885171ba5db9f2b24cb","title":"女上位打桩机","cover":"cf230705/image/gb/2iw/1cx/hp/e84e8b55922d8544e46f3241600d8e9e.jpeg","playCount":2444904,"playTime":109,"likeCount":7392,"commentCount":5,"collectCount":165,"coins":30,"originCoins":30,"freeArea":false,"tags":["自拍","无套","女上位"],"newsType":"SHORT","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":41462},"category":["推荐"]},{"id":"681b638705828daa49ed4bac","title":"骚逼母狗深喉喷水，口硬了就进来。","cover":"cf230705/image/2j/2gf/eb/fx/d5267bf9dfbf46ea2e4a80f72f4cf18c.jpg","playCount":267696,"playTime":84,"likeCount":627,"commentCount":0,"collectCount":9,"coins":30,"originCoins":30,"freeArea":false,"tags":["国产","原创","诱惑"],"newsType":"SHORT","publisher":{"name":"堵薇","portrait":"image/22/if/19/fv/06feb171aa674088bb2fb953542312fe.jpeg","fans":590},"category":["推荐"]},{"id":"681b661f05828daa49ed4c9f","title":"小萝莉小小年纪不学好","cover":"cf230705/image/bv/33u/xv/1gx/69d866b2513c01ea23be3d82609b3183.jpg","playCount":194238,"playTime":276,"likeCount":1221,"commentCount":1,"collectCount":28,"coins":0,"originCoins":0,"freeArea":false,"tags":["诱惑"],"newsType":"SHORT","publisher":{"name":"申屠凝","portrait":"image/g0/uu/64/mu/3bdcdd6c86a64b589bfcd0c9fac2d7da.jpeg","fans":122},"category":["推荐"]},{"id":"681b68f705828daa49ed4dc8","title":"真tm刺激和妹妹在马路上面开干","cover":"cf230705/image/2wu/15i/2ac/1s4/6d1660a8f486f94795d6a86dcd7558e0.jpg","playCount":35244,"playTime":98,"likeCount":198,"commentCount":0,"collectCount":8,"coins":0,"originCoins":0,"freeArea":false,"tags":["后入"],"newsType":"SHORT","publisher":{"name":"应馥","portrait":"image/3d/84/kg/r1/7acfe3938d2c4695862fa571b6af0d9c.jpeg","fans":154},"category":["推荐"]},{"id":"6944db8ff031c432e0764600","title":"纹身情侣做爱后入自拍第一视角","cover":"cf230705/image/9/jt/2rh/2u9/94e58d0ed05a125162fe5f46e3a46d31.jpeg","playCount":168894,"playTime":195,"likeCount":363,"commentCount":0,"collectCount":11,"coins":10,"originCoins":10,"freeArea":false,"tags":["自拍"],"newsType":"SHORT","publisher":{"name":"谈宜俊","portrait":"image/4f/ih/i6/rc/6b43a89e9df64d1cbf2f8fa19468f921.jpeg","fans":2188},"category":["推荐"]},{"id":"69118385f031c432e00b028c","title":"第一视角爆操苗条性感小学妹","cover":"cf230705/image/2h3/2th/2b1/yt/0b2a75a4224d68110eec7f0f5355516f.jpeg","playCount":204138,"playTime":139,"likeCount":1518,"commentCount":0,"collectCount":37,"coins":20,"originCoins":20,"freeArea":false,"tags":["母狗"],"newsType":"SHORT","publisher":{"name":"谈宜俊","portrait":"image/4f/ih/i6/rc/6b43a89e9df64d1cbf2f8fa19468f921.jpeg","fans":2188},"category":["推荐"]},{"id":"6815cc66045fa89161067e13","title":"抖音泰国网红餐厅事件美七777被爆惨遭10人强奸  控制视频跟机场造假视频目前已下架但是细心的网友还","cover":"bf211222/image/1wx/2q4/16k/1rr/17a4d71efccfcd140abb65b639f52eb4.jpg","playCount":264726,"playTime":267,"likeCount":132,"commentCount":0,"collectCount":6,"coins":50,"originCoins":50,"freeArea":false,"tags":["强奸"],"newsType":"SHORT","publisher":{"name":"太叔涵容","portrait":"image/en/fl/su/8w/d7e168beed5c4742be13cf998613d112.jpeg","fans":102},"category":["推荐"]},{"id":"6932c4f0f031c432e01c50b0","title":"狂暴出白浆5","cover":"cf230705/image/tv/1gx/2kp/1ae/c3a28ad06a2399c42364c49c146c5989.jpeg","playCount":27918,"playTime":215,"likeCount":198,"commentCount":0,"collectCount":5,"coins":0,"originCoins":0,"freeArea":false,"tags":["后入","人妻","女上位"],"newsType":"SHORT","publisher":{"name":"谈宜俊","portrait":"image/4f/ih/i6/rc/6b43a89e9df64d1cbf2f8fa19468f921.jpeg","fans":2188},"category":["推荐"]},{"id":"681b613005828daa49ed4b13","title":"被操的真开心","cover":"cf230705/image/2r4/2mq/2x4/2gn/1495fc33c7decb703c683db1a5c4f35b.jpg","playCount":247302,"playTime":140,"likeCount":2409,"commentCount":0,"collectCount":53,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","后入"],"newsType":"SHORT","publisher":{"name":"元冬寒","portrait":"image/0y/xa/59/et/35d780a3ad684635b5eb224a708f7c73.jpeg","fans":174},"category":["推荐"]},{"id":"681b6ba305828daa49ed4f69","title":"短发女神少女主动舔弄鸡巴来回上下深喉不停。7","cover":"cf230705/image/g2/zg/ge/2nw/0e5dc95eb837392d15109af0bb3afb05.jpg","playCount":197010,"playTime":186,"likeCount":198,"commentCount":0,"collectCount":7,"coins":45,"originCoins":45,"freeArea":false,"tags":["御姐","深喉","女神"],"newsType":"SHORT","publisher":{"name":"堵寄真","portrait":"image/x3/zq/om/1y/dc0fb4bcfdcc40e592dedf3bc1741377.jpeg","fans":101},"category":["推荐"]},{"id":"681b613005828daa49ed4b0d","title":"小伙泰国街头挑选人妖吃鸡巴 泰国人妖","cover":"cf230705/image/25x/1od/241/1xq/ee909f5dcdf8747a9851ee9f9fad36a3.jpg","playCount":259974,"playTime":224,"likeCount":396,"commentCount":0,"collectCount":4,"coins":0,"originCoins":0,"freeArea":false,"tags":["口交"],"newsType":"SHORT","publisher":{"name":"元冬寒","portrait":"image/0y/xa/59/et/35d780a3ad684635b5eb224a708f7c73.jpeg","fans":174},"category":["推荐"]},{"id":"682b445f74706631feb81ac5","title":"眼镜留学生 边吃黑鸡巴边打电话","cover":"bf211222/image/24r/2aw/2ks/ug/078c52a46801d959ba9ba02754a0346c.jpg","playCount":216810,"playTime":95,"likeCount":231,"commentCount":0,"collectCount":3,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产"],"newsType":"SHORT","publisher":{"name":"麴冬灵","portrait":"image/kj/av/5x/3y/d479f9465e7648b5914abbc40203648b.jpeg","fans":123},"category":["推荐"]},{"id":"698ee9e1f031c432e08acb66","title":"外表清纯玉女，实则骚的一笔","cover":"cf230705/image/1tu/f8/31z/19s/1269329250f05462246767f1989bc1ac.jpeg","playCount":130284,"playTime":35,"likeCount":1353,"commentCount":1,"collectCount":33,"coins":0,"originCoins":0,"freeArea":false,"tags":["反差骚货"],"newsType":"SHORT","publisher":{"name":"直抵花心","portrait":"image/9t/1b/9s/2j/41bfb1fe7dd44893860de1c75912d631.jpeg","fans":15},"category":["推荐"]},{"id":"681b680405828daa49ed4d69","title":"变态人妖伪娘马小宇语音指令自慰射精","cover":"cf230705/image/31x/2wf/5c/21h/8725f255766e23721fef27b46b1587bc.jpg","playCount":346698,"playTime":77,"likeCount":561,"commentCount":0,"collectCount":13,"coins":20,"originCoins":20,"freeArea":false,"tags":["国产","自慰","人妖"],"newsType":"SHORT","publisher":{"name":"红致","portrait":"image/it/m9/nk/1a/8428292ff0dc416189e0443d3f441fe5.jpeg","fans":127},"category":["推荐"]},{"id":"681b661e05828daa49ed4c94","title":"⭐极品老婆水多多","cover":"cf230705/image/s4/2pg/8g/9/cea34670f8bca2e72005252976a28204.jpg","playCount":232056,"playTime":55,"likeCount":1023,"commentCount":0,"collectCount":16,"coins":0,"originCoins":0,"freeArea":false,"tags":["少妇","调教","诱惑"],"newsType":"SHORT","publisher":{"name":"向力","portrait":"image/1m/kr/ky/0x/3728c2cecce94120a4d4bad5cabb3579.jpeg","fans":224},"category":["推荐"]},{"id":"681e0a9474706631feb7f7ca","title":"最骚熟女老阿姨绝绝子","cover":"bf211222/image/6y/13v/2mi/24d/e1ed2a3def0031efc7fb5fb8184bc443.jpg","playCount":410058,"playTime":269,"likeCount":2112,"commentCount":0,"collectCount":68,"coins":50,"originCoins":50,"freeArea":false,"tags":["国产","自拍","口交"],"newsType":"SHORT","publisher":{"name":"鲍天","portrait":"image/o7/jh/1m/al/df54ecbd6e004690a714c4a8bd11b355.jpeg","fans":520},"category":["推荐"]},{"id":"69aec7d9058db0645b20444a","title":"情侣女上位啪啪","cover":"cf230705/image/6y/1hq/2mo/2qx/9ec5b9632ecd26a16bb296e49862adb5.jpg","playCount":3358872,"playTime":39,"likeCount":25311,"commentCount":4,"collectCount":514,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","女上位"],"newsType":"SHORT","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":41462},"category":["推荐"]},{"id":"696646214788f348ecfb74ae","title":"【强奸】罪恶的鸡巴，禽兽哥哥强奸10岁的亲妹妹，撕拉硬扯，霸王硬上弓，好无助的女孩","cover":"cf230705/image/p6/fz/2ry/2ww/0b1a59876594f0b46e588763d087816b.jpg","playCount":49104,"playTime":256,"likeCount":660,"commentCount":1,"collectCount":19,"coins":0,"originCoins":0,"freeArea":false,"tags":["强奸","短视频"],"newsType":"SHORT","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":41462},"category":["推荐"]},{"id":"68c2d30d171ba5db9f2b3fd7","title":"十个眼镜九个骚#91Porn","cover":"cf230705/image/2la/1vk/2mh/xf/3522f59173ebd35f7e448665ae9b186a.jpg","playCount":1689534,"playTime":185,"likeCount":6468,"commentCount":2,"collectCount":143,"coins":0,"originCoins":0,"freeArea":false,"tags":["蛋黄派"],"newsType":"SHORT","publisher":{"name":"91精选福利","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":929},"category":["推荐"]},{"id":"681dd7e8eb7bc99f0a44dfbf","title":"【萝莉】给网恋哥哥看逼，爱的供养爱的深沉","cover":"cf230705/image/18z/ce/zi/131/4ea7f0d643260e98303336ef6f245559.jpg","playCount":250272,"playTime":119,"likeCount":1683,"commentCount":0,"collectCount":50,"coins":0,"originCoins":0,"freeArea":false,"tags":["萝莉","自拍","自慰"],"newsType":"SHORT","publisher":{"name":"雷晓绿","portrait":"image/nb/92/0s/gc/f158a9166e3648c8be5de39259556caa.jpeg","fans":486},"category":["推荐"]},{"id":"68c53c37171ba5db9f2b45f8","title":"昆明四中英语老师性爱视频曝光白天当老师晚上当母狗#91Porn","cover":"cf230705/image/1lz/dl/29p/30m/5d4a6c045dfdbf01011923bc898b4887.jpg","playCount":2199978,"playTime":286,"likeCount":5841,"commentCount":8,"collectCount":134,"coins":38,"originCoins":38,"freeArea":false,"tags":["蛋黄派"],"newsType":"SHORT","publisher":{"name":"91精选福利","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":929},"category":["推荐"]},{"id":"6932e25bf031c432e0679019","title":"这么叫春声，整栋楼都挺到了吧！","cover":"cf230705/image/13n/xh/4k/1sx/4ae41fa5bced94544479a817fbe53cef.jpeg","playCount":1000890,"playTime":97,"likeCount":5049,"commentCount":1,"collectCount":147,"coins":10,"originCoins":10,"freeArea":false,"tags":["后入","人妻","少妇"],"newsType":"SHORT","publisher":{"name":"谈宜俊","portrait":"image/4f/ih/i6/rc/6b43a89e9df64d1cbf2f8fa19468f921.jpeg","fans":2188},"category":["推荐"]},{"id":"694945f0f8accb925da73c8b","title":"女主播的奶子可真是性感诱人呀，后入应该特刺激","cover":"cf230705/image/2am/28t/1o1/2g7/65a81c400176a2cb028645cc6fede591.jpg","playCount":29106,"playTime":188,"likeCount":528,"commentCount":0,"collectCount":20,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","主播","口交"],"newsType":"SHORT","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":41462},"category":["推荐"]},{"id":"6966465a4788f348ecfb74d2","title":"穿黑丝的嫂子让我把精液射到她的丝袜上","cover":"cf230705/image/1cf/1sr/257/194/58b5abe357d2585d3a821d03277b2403.jpg","playCount":353034,"playTime":282,"likeCount":2376,"commentCount":0,"collectCount":58,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","丝袜","丝袜"],"newsType":"SHORT","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":41462},"category":["推荐"]},{"id":"68e0df9b7037c3e771fb2df9","title":"又一神级美少女 91涵菱","cover":"ims/quandan_images/c1a/c1a5f4acbda77aa7-300.jpg","playCount":160182,"playTime":248,"likeCount":891,"commentCount":0,"collectCount":35,"coins":0,"originCoins":0,"freeArea":false,"tags":["国产","御姐","自拍"],"newsType":"SHORT","publisher":{"name":"91官方","portrait":"cf230705/image/14j/32y/on/29x/47e615cbc0b0d127dfdd93eca19e21a7.png","fans":41462},"category":["推荐"]},{"id":"681b689505828daa49ed4d7c","title":"大姐姐自拍给你看","cover":"cf230705/image/1k6/yq/14e/v6/f68092146b16aaa4b31066a147ac364a.jpg","playCount":72666,"playTime":115,"likeCount":33,"commentCount":0,"collectCount":3,"coins":26,"originCoins":26,"freeArea":false,"tags":["国产","巨乳","刺激"],"newsType":"SHORT","publisher":{"name":"鲍峰","portrait":"image/9t/1f/kc/5h/a61e9021fc234d7093ce4bfeb647de58.jpeg","fans":368},"category":["推荐"]},{"id":"681b6bd405828daa49ed4f9c","title":"真实人妻与上司偷情高潮视预流出。","cover":"cf230705/image/bf/17q/1vd/2x5/b61b3d84d686c643fc4d7a61a565ba98.jpg","playCount":373032,"playTime":299,"likeCount":1914,"commentCount":0,"collectCount":58,"coins":25,"originCoins":25,"freeArea":false,"tags":["国产"],"newsType":"SHORT","publisher":{"name":"堵薇","portrait":"image/22/if/19/fv/06feb171aa674088bb2fb953542312fe.jpeg","fans":590},"category":["推荐"]}]};
+
+const catNames = Object.keys(DATA.categories);
+let currentCat = catNames[0];
+let allVideos = [];
+Object.values(DATA.categories).forEach(arr => allVideos.push(...arr));
+allVideos.push(...DATA.shortVideos);
+
+// Helpers
+function formatCount(n) {
+  if (n >= 10000) return (n / 10000).toFixed(1) + '万';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return n;
+}
+function formatTime(sec) {
+  if (!sec || sec <= 0) return '00:00';
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function coverUrl(path) {
+  if (!path) return '';
+  return `${BASE_URL}/${path}`;
+}
+
+// ===== Tab switching =====
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.tab-item')[['home','douyin','mine'].indexOf(name)].classList.add('active');
+}
+
+// ===== Home Page =====
+function renderCatTabs() {
+  const el = document.getElementById('catTabs');
+  el.innerHTML = catNames.map(name =>
+    `<div class="cat-tab${name===currentCat?' active':''}" onclick="switchCat('${name}')">${name.replace('_',' ')}</div>`
+  ).join('');
+}
+
+function switchCat(name) {
+  currentCat = name;
+  renderCatTabs();
+  renderHomeGrid();
+}
+
+function renderVideoCard(v) {
+  const badge = v.freeArea ? '' :
+    (v.originCoins === 0 ? '<div class="badge badge-vip">VIP</div>' :
+    `<div class="badge badge-coins">金币</div>`);
+  const tags = (v.tags || []).filter(t=>t).slice(0,2).map(t => `<span class="tag">${t}</span>`).join('');
+  return `<div class="video-card" onclick="openDetail('${v.id}')">
+    <div class="cover-box">
+      <img src="${coverUrl(v.cover)}" alt="" loading="lazy" onerror="this.style.display='none'">
+      ${badge}
+      <div class="meta-overlay">
+        <span>▶ ${formatCount(v.playCount)}</span>
+        <span>${formatTime(v.playTime)}</span>
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="title">${v.title}</div>
+      <div class="tag-row">${tags}</div>
+      <div class="bottom-row">
+        <span>${v.publisher?.name || ''}</span>
+        <span>${v.commentCount > 0 ? '评论'+formatCount(v.commentCount) : ''}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderHomeGrid() {
+  const videos = DATA.categories[currentCat] || [];
+  document.getElementById('homeGrid').innerHTML = videos.map(renderVideoCard).join('');
+}
+
+// ===== Douyin Page — TikTok-style vertical swipe =====
+const dy = {
+  tab: 'recommend',       // 'recommend' | 'latest'
+  feeds: { recommend: [], latest: [] },
+  idx: 0,                 // current index in active feed
+  startY: 0,
+  startTime: 0,
+  deltaY: 0,
+  swiping: false,
+  threshold: 60,          // px to trigger slide change
+  velocityThreshold: 0.4, // px/ms
+  hintShown: false,
+  likedSet: new Set(),
+};
+
+function initDyFeeds() {
+  // 推荐: shuffled short videos
+  dy.feeds.recommend = [...DATA.shortVideos].sort(() => Math.random() - 0.5);
+  // 最新: sorted by playCount descending (simulate "latest popular")
+  dy.feeds.latest = [...DATA.shortVideos].sort((a,b) => b.playCount - a.playCount);
+}
+
+function dyFeed() { return dy.feeds[dy.tab]; }
+
+function switchDyTab(tab) {
+  if (tab === dy.tab) return;
+  dy.tab = tab;
+  dy.idx = 0;
+  document.querySelectorAll('.dy-top-tab').forEach(el => {
+    el.classList.toggle('active', el.dataset.dyTab === tab);
+  });
+  dyRender();
+}
+
+function dySlideHTML(v, position) {
+  if (!v) return '';
+  const avatar = v.publisher?.portrait ? coverUrl(v.publisher.portrait) : '';
+  const tags = (v.tags||[]).filter(t=>t).slice(0,3);
+  const liked = dy.likedSet.has(v.id);
+  return `<div class="dy-slide" data-pos="${position}" data-vid="${v.id}">
+    <img class="sv-cover" src="${coverUrl(v.cover)}" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22/>'">
+
+    <div class="sv-play-center" id="playIcon-${position}">
+      <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    </div>
+
+    <div class="sv-overlay">
+      <div class="sv-publisher">
+        ${avatar ? `<img class="sv-avatar" src="${avatar}" onerror="this.style.display='none'">` : ''}
+        <span class="sv-name">@${v.publisher?.name||'用户'}</span>
+        <button class="sv-follow-btn">+ 关注</button>
+      </div>
+      <div class="sv-title">${v.title}</div>
+      ${tags.length ? `<div class="sv-tags">${tags.map(t=>`<span class="sv-tag">${t}</span>`).join('')}</div>` : ''}
+      <div class="sv-music">
+        <svg class="sv-music-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span class="sv-music-text">${v.publisher?.name||'原声'} 创作的原声 — ${v.title.slice(0,20)}  ·  ${v.publisher?.name||'原声'} 创作的原声 — ${v.title.slice(0,20)}</span>
+      </div>
+    </div>
+
+    <div class="sv-actions">
+      <div class="sv-action-avatar">
+        ${avatar ? `<img src="${avatar}" onerror="this.style.display='none'">` : `<img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>">`}
+        <div class="plus-badge">+</div>
+      </div>
+      <div class="sv-action-btn ${liked?'liked':''}" onclick="dyToggleLike(event,'${v.id}')">
+        <svg viewBox="0 0 24 24" fill="${liked?'var(--accent)':'none'}" stroke="${liked?'var(--accent)':'currentColor'}" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <span>${formatCount(liked ? v.likeCount+1 : v.likeCount)}</span>
+      </div>
+      <div class="sv-action-btn" onclick="event.stopPropagation()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>${formatCount(v.commentCount)}</span>
+      </div>
+      <div class="sv-action-btn" onclick="event.stopPropagation()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        <span>分享</span>
+      </div>
+      <div class="sv-action-btn" onclick="event.stopPropagation()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>${formatCount(v.collectCount)}</span>
+      </div>
+      <div class="sv-disc"></div>
+    </div>
+  </div>`;
+}
+
+function dyRender() {
+  const vp = document.getElementById('dyViewport');
+  const feed = dyFeed();
+  const cur = feed[dy.idx];
+  const prev = dy.idx > 0 ? feed[dy.idx - 1] : null;
+  const next = dy.idx < feed.length - 1 ? feed[dy.idx + 1] : null;
+
+  let html = '';
+  if (prev) html += dySlideHTML(prev, 'prev');
+  html += dySlideHTML(cur, 'current');
+  if (next) html += dySlideHTML(next, 'next');
+  vp.innerHTML = html;
+
+  // Position slides
+  const slides = vp.querySelectorAll('.dy-slide');
+  slides.forEach(s => {
+    if (s.dataset.pos === 'prev')    s.style.transform = 'translateY(-100%)';
+    else if (s.dataset.pos === 'current') s.style.transform = 'translateY(0)';
+    else if (s.dataset.pos === 'next')    s.style.transform = 'translateY(100%)';
+  });
+
+  // Reset progress
+  const prog = document.getElementById('dyProgress');
+  prog.style.animation = 'none';
+  prog.offsetHeight; // reflow
+  prog.style.animation = 'fakeProgress 15s linear infinite';
+
+  // Hide hint after first swipe
+  if (dy.hintShown) {
+    document.getElementById('dyHint').classList.add('hidden');
+  }
+}
+
+function dyToggleLike(e, vid) {
+  e.stopPropagation();
+  if (dy.likedSet.has(vid)) dy.likedSet.delete(vid);
+  else dy.likedSet.add(vid);
+  dyRender();
+}
+
+// Touch handling
+function dyTouchStart(e) {
+  dy.startY = e.touches[0].clientY;
+  dy.startTime = Date.now();
+  dy.deltaY = 0;
+  dy.swiping = true;
+  // Remove transition during drag
+  document.querySelectorAll('.dy-slide').forEach(s => s.classList.add('no-transition'));
+}
+
+function dyTouchMove(e) {
+  if (!dy.swiping) return;
+  dy.deltaY = e.touches[0].clientY - dy.startY;
+
+  // Rubber-band at edges
+  const feed = dyFeed();
+  if (dy.idx === 0 && dy.deltaY > 0) dy.deltaY *= 0.3;
+  if (dy.idx === feed.length - 1 && dy.deltaY < 0) dy.deltaY *= 0.3;
+
+  const slides = document.querySelectorAll('.dy-slide');
+  slides.forEach(s => {
+    let base = 0;
+    if (s.dataset.pos === 'prev') base = -window.innerHeight;
+    else if (s.dataset.pos === 'next') base = window.innerHeight;
+    s.style.transform = `translateY(${base + dy.deltaY}px)`;
+  });
+}
+
+function dyTouchEnd(e) {
+  if (!dy.swiping) return;
+  dy.swiping = false;
+  const elapsed = Date.now() - dy.startTime;
+  const velocity = Math.abs(dy.deltaY) / elapsed;
+  const feed = dyFeed();
+
+  // Re-enable transition
+  document.querySelectorAll('.dy-slide').forEach(s => s.classList.remove('no-transition'));
+
+  let dir = 0; // -1 = swipe up (next), 1 = swipe down (prev)
+  if (Math.abs(dy.deltaY) > dy.threshold || velocity > dy.velocityThreshold) {
+    dir = dy.deltaY < 0 ? -1 : 1;
+  }
+
+  if (dir === -1 && dy.idx < feed.length - 1) {
+    dy.idx++;
+    dy.hintShown = true;
+    dyRender();
+  } else if (dir === 1 && dy.idx > 0) {
+    dy.idx--;
+    dyRender();
+  } else {
+    // Snap back
+    const slides = document.querySelectorAll('.dy-slide');
+    slides.forEach(s => {
+      if (s.dataset.pos === 'prev')    s.style.transform = 'translateY(-100%)';
+      else if (s.dataset.pos === 'current') s.style.transform = 'translateY(0)';
+      else if (s.dataset.pos === 'next')    s.style.transform = 'translateY(100%)';
+    });
+  }
+}
+
+// Double-tap to like
+let lastTapTime = 0;
+function dyDoubleTap(e) {
+  const now = Date.now();
+  if (now - lastTapTime < 300) {
+    // Double tap — like
+    const cur = dyFeed()[dy.idx];
+    if (cur && !dy.likedSet.has(cur.id)) {
+      dy.likedSet.add(cur.id);
+      dyRender();
+      // Show heart animation
+      showHeartAnim(e);
+    }
+  }
+  lastTapTime = now;
+}
+
+function showHeartAnim(e) {
+  const vp = document.getElementById('dyViewport');
+  const heart = document.createElement('div');
+  heart.innerHTML = `<svg width="80" height="80" viewBox="0 0 24 24" fill="var(--accent)" stroke="none">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  </svg>`;
+  heart.style.cssText = `position:absolute;top:${e.touches?e.touches[0].clientY-40:e.clientY-40}px;left:${e.touches?e.touches[0].clientX-40:e.clientX-40}px;z-index:30;pointer-events:none;animation:heartPop .8s ease-out forwards;`;
+  vp.appendChild(heart);
+  setTimeout(() => heart.remove(), 900);
+}
+
+// Add heart animation keyframes
+(function(){
+  const style = document.createElement('style');
+  style.textContent = `@keyframes heartPop { 0%{transform:scale(0);opacity:1} 50%{transform:scale(1.3);opacity:1} 100%{transform:scale(1);opacity:0} }`;
+  document.head.appendChild(style);
+})();
+
+function initDySwipe() {
+  const vp = document.getElementById('dyViewport');
+  vp.addEventListener('touchstart', dyTouchStart, {passive:true});
+  vp.addEventListener('touchmove', dyTouchMove, {passive:true});
+  vp.addEventListener('touchend', dyTouchEnd, {passive:true});
+  vp.addEventListener('click', dyDoubleTap);
+
+  // Mouse fallback for desktop
+  let mouseDown = false;
+  vp.addEventListener('mousedown', e => {
+    mouseDown = true;
+    dy.startY = e.clientY; dy.startTime = Date.now(); dy.deltaY = 0; dy.swiping = true;
+    document.querySelectorAll('.dy-slide').forEach(s => s.classList.add('no-transition'));
+  });
+  vp.addEventListener('mousemove', e => {
+    if (!mouseDown) return;
+    dy.deltaY = e.clientY - dy.startY;
+    const feed = dyFeed();
+    if (dy.idx === 0 && dy.deltaY > 0) dy.deltaY *= 0.3;
+    if (dy.idx === feed.length - 1 && dy.deltaY < 0) dy.deltaY *= 0.3;
+    document.querySelectorAll('.dy-slide').forEach(s => {
+      let base = 0;
+      if (s.dataset.pos === 'prev') base = -window.innerHeight;
+      else if (s.dataset.pos === 'next') base = window.innerHeight;
+      s.style.transform = `translateY(${base + dy.deltaY}px)`;
+    });
+  });
+  vp.addEventListener('mouseup', () => { mouseDown = false; dyTouchEnd(); });
+  vp.addEventListener('mouseleave', () => { if(mouseDown){mouseDown=false;dyTouchEnd();} });
+
+  // Keyboard: arrow up/down
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('page-douyin').classList.contains('active')) return;
+    if (e.key === 'ArrowDown' || e.key === 'j') {
+      if (dy.idx < dyFeed().length - 1) { dy.idx++; dy.hintShown=true; dyRender(); }
+    } else if (e.key === 'ArrowUp' || e.key === 'k') {
+      if (dy.idx > 0) { dy.idx--; dyRender(); }
+    }
+  });
+}
+
+function renderDouyinFeed() {
+  initDyFeeds();
+  dyRender();
+  initDySwipe();
+}
+
+// ===== Video Detail =====
+function openDetail(id) {
+  const v = allVideos.find(v => v.id === id);
+  if (!v) return;
+  document.getElementById('detailCover').src = coverUrl(v.cover);
+  document.getElementById('detailTitle').textContent = v.title;
+  document.getElementById('detailPlayCount').textContent = formatCount(v.playCount) + '观看量';
+  document.getElementById('detailLike').querySelector('span').textContent = formatCount(v.likeCount);
+  document.getElementById('detailCollect').querySelector('span').textContent = formatCount(v.collectCount);
+
+  const tagsEl = document.getElementById('detailTags');
+  tagsEl.innerHTML = (v.tags || []).filter(t=>t).map(t => `<span class="tag">${t}</span>`).join('');
+
+  // Recommend: random 4 from same category or all
+  const catVideos = allVideos.filter(x => x.id !== id);
+  const shuffled = catVideos.sort(() => Math.random() - 0.5).slice(0, 4);
+  document.getElementById('detailRecommend').innerHTML = shuffled.map(renderVideoCard).join('');
+
+  document.getElementById('detailPage').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detailPage').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Init
+renderCatTabs();
+renderHomeGrid();
+renderDouyinFeed();
+</script>
+</body>
+</html>
