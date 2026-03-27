@@ -1,6 +1,6 @@
 import { api } from '../api.js';
 import { formatCount, escapeHtml } from '../utils.js';
-import { isLiked, toggleLike } from '../store.js';
+import { isLiked, toggleLike, isCollected, toggleCollection, isFollowed, toggleFollow, addHistory } from '../store.js';
 import { decryptImages } from '../imgloader.js';
 
 let config = null;
@@ -105,6 +105,8 @@ function dySlideHTML(v, position) {
   if (!v) return '';
   const tags = (v.tags || []).filter(Boolean).slice(0, 3);
   const liked = isLiked(v.id);
+  const collected = isCollected(v.id);
+  const followed = v.publisher?.uid ? isFollowed(v.publisher.uid) : false;
 
   return `<div class="dy-slide" data-pos="${position}" data-vid="${v.id}">
     <img class="sv-cover" data-decrypt-src="${escapeHtml(v.cover || '')}" alt="">
@@ -115,7 +117,7 @@ function dySlideHTML(v, position) {
       <div class="sv-publisher">
         ${v.publisher?.portrait ? `<img class="sv-avatar" data-decrypt-src="${escapeHtml(v.publisher.portrait)}" alt="">` : ''}
         <span class="sv-name">@${escapeHtml(v.publisher?.name || '用户')}</span>
-        <button class="sv-follow-btn">+ 关注</button>
+        <button class="sv-follow-btn ${followed ? 'followed' : ''}" data-action="follow">${followed ? '已关注' : '+ 关注'}</button>
       </div>
       <div class="sv-title">${escapeHtml(v.title)}</div>
       ${tags.length ? `<div class="sv-tags">${tags.map(t => `<span class="sv-tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
@@ -149,11 +151,11 @@ function dySlideHTML(v, position) {
         </svg>
         <span>分享</span>
       </div>
-      <div class="sv-action-btn" data-action="collect">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="sv-action-btn ${collected ? 'collected' : ''}" data-action="collect">
+        <svg viewBox="0 0 24 24" fill="${collected ? 'var(--accent-gold)' : 'none'}" stroke="${collected ? 'var(--accent-gold)' : 'currentColor'}" stroke-width="2">
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
         </svg>
-        <span>${formatCount(v.collectCount)}</span>
+        <span>${collected ? '已收藏' : formatCount(v.collectCount)}</span>
       </div>
       <div class="sv-disc"></div>
     </div>

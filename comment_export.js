@@ -36,6 +36,7 @@ const {
   filterBlockedComments,
   getSourceCommentCount,
   mergeReplies,
+  shouldDeferFailedVideo,
   shouldWriteCommentFile,
   shouldFetchComments,
   toSafeString,
@@ -48,6 +49,7 @@ const PAGE_SIZE = Number(process.env.PAGE_SIZE || 15);
 const MAX_VIDEOS = Number(process.env.MAX_VIDEOS || 0);
 const REQUEST_DELAY_MS = Number(process.env.REQUEST_DELAY_MS || 25);
 const REPLY_DELAY_MS = Number(process.env.REPLY_DELAY_MS || 15);
+const MAX_DEFERRED_ATTEMPTS = Number(process.env.MAX_DEFERRED_ATTEMPTS || 2);
 const FORCE_ALL = process.env.FORCE_ALL === '1';
 const FORCE_REFETCH = process.env.FORCE_REFETCH === '1';
 const CLEAN = process.env.CLEAN === '1';
@@ -84,7 +86,10 @@ function curl(args) {
   });
   if (res.status !== 0) {
     const message = (res.stderr || '').trim() || `curl exit ${res.status}`;
-    throw new Error(message);
+    const error = new Error(message);
+    error.failureKind = 'curl_transport_error';
+    error.curlExitCode = res.status;
+    throw error;
   }
   return res.stdout;
 }
@@ -232,6 +237,7 @@ function createSummaryBase(totalVideos) {
     pageSize: PAGE_SIZE,
     requestDelayMs: REQUEST_DELAY_MS,
     replyDelayMs: REPLY_DELAY_MS,
+    maxDeferredAttempts: MAX_DEFERRED_ATTEMPTS,
     onlyIds: Array.from(ONLY_IDS),
     stats: {
       processed: 0,
@@ -247,6 +253,9 @@ function createSummaryBase(totalVideos) {
       replyCommentsFetched: 0,
       totalCommentNodesFetched: 0,
       filteredCommentNodes: 0,
+      deferredQueued: 0,
+      deferredRecovered: 0,
+      deferredFailed: 0,
       reloginCount: 0,
     },
   };
@@ -337,7 +346,11 @@ async function main() {
     }
 
     if (!lastError) {
-      throw new Error(`请求失败：path=${pathname}`);
+      const error = new Error(`请求失败：path=${pathname}`);
+      error.failureKind = 'auth_4010_exhausted';
+      error.pathName = pathname;
+      error.retries = retries;
+      throw error;
     }
 
     throw lastError;
@@ -474,10 +487,16 @@ async function main() {
   }
 
   const sourceFiles = pickSourceFiles(readSourceFiles(SOURCE_DIR));
+  const pendingTasks = sourceFiles.map((fileName) => ({
+    fileName,
+    deferredAttempt: 0,
+  }));
   const summary = createSummaryBase(sourceFiles.length);
   persistSummary(summary);
 
-  for (const [index, fileName] of sourceFiles.entries()) {
+  while (pendingTasks.length > 0) {
+    const task = pendingTasks.shift();
+    const { fileName, deferredAttempt } = task;
     const sourcePath = path.join(SOURCE_DIR, fileName);
     const outputPath = path.join(outByIdDir, fileName);
     const video = loadJson(sourcePath);
@@ -537,19 +556,54 @@ async function main() {
           summary.stats.omittedEmpty += 1;
           removeFileIfExists(outputPath);
         }
+
+        if (deferredAttempt > 0) {
+          summary.stats.deferredRecovered += 1;
+        }
       }
     } catch (error) {
+      if (
+        shouldDeferFailedVideo({
+          error,
+          deferredAttempt,
+          maxDeferredAttempts: MAX_DEFERRED_ATTEMPTS,
+        })
+      ) {
+        summary.stats.deferredQueued += 1;
+        pendingTasks.push({
+          fileName,
+          deferredAttempt: deferredAttempt + 1,
+        });
+        log(
+          `延后重试=${fileName},`,
+          `deferredAttempt=${deferredAttempt + 1}/${MAX_DEFERRED_ATTEMPTS},`,
+          `reason=${error.failureKind || 'unknown'}`
+        );
+        persistSummary(summary);
+
+        if (pendingTasks.length > 0) {
+          await delay(REQUEST_DELAY_MS);
+        }
+        continue;
+      }
+
       const errorRecord = {
         at: new Date().toISOString(),
         fileName,
         id: toSafeString(video.id),
         title: toSafeString(video.title),
+        deferredAttempt,
+        failureKind: error?.failureKind || null,
         message: error && error.stack ? error.stack : String(error),
       };
 
       removeFileIfExists(outputPath);
       appendNdjson(errorPath, errorRecord);
       summary.stats.failed += 1;
+
+      if (deferredAttempt > 0) {
+        summary.stats.deferredFailed += 1;
+      }
     }
 
     summary.stats.processed += 1;
@@ -564,7 +618,7 @@ async function main() {
       persistSummary(summary);
     }
 
-    if (index < sourceFiles.length - 1) {
+    if (pendingTasks.length > 0) {
       await delay(REQUEST_DELAY_MS);
     }
   }

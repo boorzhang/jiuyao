@@ -227,6 +227,10 @@ m3u8 = BASE_URL + /api/app/vid/h5/m3u8/{sourceURL}?token={JWT}&c={lineUrl}
 - `BLOCKED_USER_IDS` 默认包含 `100001`
 - 所有 `userID = 100001` 的主评论和回复都过滤掉
 - 如果最终 `comments` 为空，则删除/不写该视频 JSON
+- 如果 `/comment/list` 或评论抓取链路因为“纯 `4010` 耗尽”失败，不立刻记最终失败
+- 这类视频会先进入延后重试队列，排到本轮队尾再抓
+- 当前延后重试上限：`MAX_DEFERRED_ATTEMPTS = 2`
+- 只有超过延后重试上限后仍失败，才写入 `_errors.ndjson`
 - 为避免旧格式文件误判可续跑结果，续跑只接受：
   - `exportVersion === 2`
   - `fetchStatus === 'ok'`
@@ -262,6 +266,7 @@ m3u8 = BASE_URL + /api/app/vid/h5/m3u8/{sourceURL}?token={JWT}&c={lineUrl}
 - 遇到 `4010` 自动重登
 - 连续 `4010` 时轮换 `devID`
 - 重建 `X-User-Agent`
+- 对短时风控窗口导致的“连续 `4010` 耗尽”，评论脚本现在会延后重试，而不是立刻记死失败
 
 这套逻辑已经写进：
 
@@ -348,7 +353,15 @@ OUT_DIR=/var/zip/jiuyao/comments \
 /Users/ivan/.nvm/versions/node/v24.14.0/bin/node /var/zip/jiuyao/comment_export.js
 ```
 
-### 11.4 强制忽略 `commentCount` 直接打评论接口
+### 11.4 指定延后重试上限
+
+```bash
+MAX_DEFERRED_ATTEMPTS=2 \
+OUT_DIR=/var/zip/jiuyao/comments \
+/Users/ivan/.nvm/versions/node/v24.14.0/bin/node /var/zip/jiuyao/comment_export.js
+```
+
+### 11.5 强制忽略 `commentCount` 直接打评论接口
 
 ```bash
 FORCE_ALL=1 \
@@ -357,13 +370,13 @@ OUT_DIR=/var/zip/jiuyao/comments \
 /Users/ivan/.nvm/versions/node/v24.14.0/bin/node /var/zip/jiuyao/comment_export.js
 ```
 
-### 11.5 跑评论逻辑测试
+### 11.6 跑评论逻辑测试
 
 ```bash
 /Users/ivan/.nvm/versions/node/v24.14.0/bin/node --test /var/zip/jiuyao/tests/comment_export_core.test.js
 ```
 
-### 11.6 检查评论脚本语法
+### 11.7 检查评论脚本语法
 
 ```bash
 /Users/ivan/.nvm/versions/node/v24.14.0/bin/node --check /var/zip/jiuyao/comment_export.js
