@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, cpSync, mkdirSync, existsSync, rmSync } from 'node:fs';
+import { readFileSync, readdirSync, cpSync, mkdirSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { buildCategories } from './categories.js';
@@ -33,7 +33,6 @@ export function buildData({
   console.log(`源数据目录: ${root}`);
   console.log(`输出目录: ${outDir}`);
 
-  rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
 
   console.log('\n[1/6] 读取全部视频...');
