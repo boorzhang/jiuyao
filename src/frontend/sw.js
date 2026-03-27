@@ -1,89 +1,122 @@
-const CACHE_NAME = 'jiuyao-v1';
-const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/js/app.js',
-  '/js/api.js',
-  '/js/store.js',
-  '/js/utils.js',
-  '/js/pages/home.js',
-  '/js/pages/douyin.js',
-  '/js/pages/mine.js',
-  '/js/pages/detail.js',
-  '/js/imgloader.js',
-  '/manifest.json',
-];
+const swUrl = new URL(self.location.href);
+const releaseId = swUrl.searchParams.get('releaseId') || 'runtime';
+const SHELL_CACHE = `jiuyao-shell-${releaseId}`;
+const COVER_CACHE = `jiuyao-covers-${releaseId}`;
+const DATA_CACHE = `jiuyao-data-${releaseId}`;
+const ACTIVE_CACHES = new Set([SHELL_CACHE, COVER_CACHE, DATA_CACHE]);
+const APP_SHELL = ['/', '/index.html', '/manifest.json'];
 
-const COVER_CACHE = 'jiuyao-covers-v1';
-const DATA_CACHE = 'jiuyao-data-v1';
-const COVER_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 天
+function isM3u8Request(url) {
+  return url.pathname.endsWith('.m3u8') || url.pathname.includes('/m3u8/');
+}
 
-// 安装：预缓存 app shell
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+function isReleasePointer(url) {
+  return url.pathname === '/release.json' || url.pathname.endsWith('/release.json');
+}
+
+function isDataJsonRequest(url) {
+  return url.pathname.endsWith('.json') && url.pathname.includes('/data/');
+}
+
+function isShellRequest(request, url) {
+  return request.mode === 'navigate'
+    || url.pathname === '/'
+    || url.pathname.endsWith('.html')
+    || url.pathname === '/manifest.json'
+    || url.pathname.startsWith('/assets/');
+}
+
+// 安装：预缓存最小站点壳，其他资源在首次访问后进入 cache-first。
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(SHELL_CACHE)
+      .then((cache) => cache.addAll(APP_SHELL))
       .then(() => self.skipWaiting())
   );
 });
 
-// 激活：清理旧缓存
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys
-        .filter(k => k !== CACHE_NAME && k !== COVER_CACHE && k !== DATA_CACHE)
-        .map(k => caches.delete(k))
-      )
-    ).then(() => self.clients.claim())
+// 激活：releaseId 变化后清理旧缓存，避免旧版站点壳和数据继续存活。
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(
+        keys
+          .filter((key) => key.startsWith('jiuyao-') && !ACTIVE_CACHES.has(key))
+          .map((key) => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', (e) => {
-  const url = new URL(e.request.url);
-
-  // M3U8: network only
-  if (url.pathname.endsWith('.m3u8') || url.pathname.includes('/m3u8/')) {
-    e.respondWith(fetch(e.request));
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') {
     return;
   }
 
-  // 加密图片 (imgosne.qqdanb.cn): cache-first, 7天
-  // 图片由 JS 层解密，SW 只缓存加密的原始数据
-  if (url.hostname.includes('qqdanb.cn') && !url.pathname.endsWith('.m3u8')) {
-    e.respondWith(
-      caches.open(COVER_CACHE).then(cache =>
-        cache.match(e.request).then(cached => {
-          if (cached) return cached;
-          return fetch(e.request).then(res => {
-            if (res.ok) cache.put(e.request, res.clone());
-            return res;
-          });
-        })
-      )
+  const url = new URL(event.request.url);
+
+  // m3u8: network only，避免播放列表被 Service Worker 持久缓存。
+  if (isM3u8Request(url)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // release 指针始终走网络，让浏览器能第一时间感知版本切换。
+  if (isReleasePointer(url)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // 加密图片走 cache-first，减少重复拉取原始密文。
+  if (url.hostname.includes('qqdanb.cn')) {
+    event.respondWith(
+      caches.open(COVER_CACHE).then(async (cache) => {
+        const cached = await cache.match(event.request);
+        if (cached) {
+          return cached;
+        }
+
+        const response = await fetch(event.request);
+        if (response.ok) {
+          cache.put(event.request, response.clone());
+        }
+        return response;
+      })
     );
     return;
   }
 
-  // 数据 JSON (r2): network-first + cache fallback
-  if (url.pathname.startsWith('/data/')) {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          if (res.ok) {
-            const clone = res.clone();
-            caches.open(DATA_CACHE).then(cache => cache.put(e.request, clone));
+  // 数据 JSON: network-first + cache fallback，兼顾新鲜度和容错。
+  if (isDataJsonRequest(url)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const cloned = response.clone();
+            caches.open(DATA_CACHE).then((cache) => cache.put(event.request, cloned));
           }
-          return res;
+          return response;
         })
-        .catch(() => caches.match(e.request))
+        .catch(() => caches.match(event.request))
     );
     return;
   }
 
-  // App shell: cache-first
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  // 站点壳与 release 资产: cache-first，配合 releaseId 分代缓存。
+  if (isShellRequest(event.request, url)) {
+    event.respondWith(
+      caches.open(SHELL_CACHE).then(async (cache) => {
+        const cached = await cache.match(event.request);
+        if (cached) {
+          return cached;
+        }
+
+        const response = await fetch(event.request);
+        if (response.ok) {
+          cache.put(event.request, response.clone());
+        }
+        return response;
+      })
+    );
+  }
 });

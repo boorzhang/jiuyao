@@ -1,4 +1,4 @@
-import { api, setR2Base } from './api.js';
+import { api, applyReleaseConfig } from './api.js';
 import { initImageLoader } from './imgloader.js';
 import { initHome } from './pages/home.js';
 import { initDouyin } from './pages/douyin.js';
@@ -21,18 +21,82 @@ function switchTab(name) {
   if (name === 'mine') refreshMine();
 }
 
-async function init() {
-  // 加载配置
-  let config;
+/**
+ * 加载当前发布版本指针。
+ *
+ * 使用示例：
+ * ```js
+ * const release = await loadReleaseManifest();
+ * console.log(release.releaseId);
+ * ```
+ */
+export async function loadReleaseManifest(fetchImpl = fetch, releaseUrl = '/release.json') {
+  const response = await fetchImpl(releaseUrl, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`加载 release.json 失败: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * 先应用 release manifest，再读取当前版本的数据配置。
+ *
+ * 使用示例：
+ * ```js
+ * const { release, config } = await bootstrapRuntime();
+ * ```
+ */
+export async function bootstrapRuntime({
+  fetchRelease = () => loadReleaseManifest(),
+  applyRelease = applyReleaseConfig,
+  loadConfig = () => api.config(),
+} = {}) {
+  let release = {};
+
   try {
-    config = await api.config();
-  } catch (e) {
-    console.error('加载配置失败:', e);
+    release = await fetchRelease();
+  } catch (error) {
+    console.warn('读取 release manifest 失败，回退到默认数据前缀:', error);
+  }
+
+  const runtime = applyRelease(release);
+  const config = await loadConfig();
+
+  return {
+    release: {
+      ...release,
+      ...runtime,
+    },
+    config,
+  };
+}
+
+function registerServiceWorker(releaseId = '') {
+  if (!('serviceWorker' in navigator)) {
     return;
   }
 
-  // 配置 R2 base
-  if (config.r2Base) setR2Base(config.r2Base);
+  const query = encodeURIComponent(releaseId || 'runtime');
+  navigator.serviceWorker
+    .register(`/sw.js?releaseId=${query}`, { updateViaCache: 'none' })
+    .catch(() => {});
+}
+
+async function init() {
+  let release;
+  let config;
+
+  try {
+    const runtime = await bootstrapRuntime();
+    release = runtime.release;
+    config = runtime.config;
+  } catch (e) {
+    console.error('初始化前端失败:', e);
+    return;
+  }
+
+  document.documentElement.dataset.releaseId = release.releaseId || 'runtime';
 
   // 初始化图片解密加载器
   initImageLoader();
@@ -53,10 +117,10 @@ async function init() {
     });
   });
 
-  // PWA 注册
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  }
+  // PWA 注册：让 SW 直接感知当前 releaseId，便于清理旧缓存。
+  registerServiceWorker(release.releaseId);
 }
 
-init();
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  init();
+}

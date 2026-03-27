@@ -57,8 +57,11 @@ function copyAssetDir(srcDir, assetDir, dirName) {
 
 function rewriteIndexHtml(html, assetPrefix) {
   return html
+    .replace(/(["'])\/css\//g, `$1${assetPrefix}/css/`)
     .replace(/(["'])css\//g, `$1${assetPrefix}/css/`)
+    .replace(/(["'])\/js\//g, `$1${assetPrefix}/js/`)
     .replace(/(["'])js\//g, `$1${assetPrefix}/js/`)
+    .replace(/(["'])\/vendor\//g, `$1${assetPrefix}/vendor/`)
     .replace(/(["'])vendor\//g, `$1${assetPrefix}/vendor/`);
 }
 

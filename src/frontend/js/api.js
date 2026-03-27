@@ -1,8 +1,27 @@
-// 数据获取层 — 所有请求指向静态 JSON
+// 数据获取层：默认走 release manifest 提供的数据前缀，本地开发时再回退到本地静态服务。
 const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-let R2_BASE = isDev ? 'http://localhost:3001' : '';
+const DEFAULT_R2_BASE = isDev ? 'http://localhost:3001' : '';
+let R2_BASE = DEFAULT_R2_BASE;
 
 const cache = new Map();
+
+/**
+ * 规范化静态数据前缀。
+ *
+ * 使用示例：
+ * ```js
+ * const base = normalizeBase('https://static.example.com/releases/r1/');
+ * // => https://static.example.com/releases/r1
+ * ```
+ */
+function normalizeBase(base) {
+  return String(base || '').trim().replace(/\/+$/, '');
+}
+
+function buildUrl(pathname) {
+  const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  return `${R2_BASE}${normalizedPath}`;
+}
 
 async function fetchJSON(url) {
   if (cache.has(url)) return cache.get(url);
@@ -13,20 +32,61 @@ async function fetchJSON(url) {
   return data;
 }
 
+function clearImageCache() {
+  for (const blobUrl of imgDecryptCache.values()) {
+    if (typeof blobUrl === 'string' && blobUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(blobUrl);
+    }
+  }
+  imgDecryptCache.clear();
+  imgDecryptInFlight.clear();
+}
+
 export function setR2Base(base) {
-  R2_BASE = base;
+  const nextBase = normalizeBase(base) || DEFAULT_R2_BASE;
+  const changed = nextBase !== R2_BASE;
+  R2_BASE = nextBase;
+
+  if (changed) {
+    clearCache();
+    clearImageCache();
+  }
+
+  return changed;
+}
+
+/**
+ * 根据 release manifest 更新当前运行时的数据前缀。
+ *
+ * 使用示例：
+ * ```js
+ * applyReleaseConfig({
+ *   releaseId: '20260327-demo',
+ *   dataBase: 'https://static.example.com/releases/20260327-demo'
+ * });
+ * ```
+ */
+export function applyReleaseConfig(releaseManifest = {}) {
+  const nextBase = releaseManifest.dataBase || releaseManifest.r2Base || DEFAULT_R2_BASE;
+  const changed = setR2Base(nextBase);
+
+  return {
+    releaseId: releaseManifest.releaseId || '',
+    r2Base: R2_BASE,
+    changed,
+  };
 }
 
 export const api = {
-  config: () => fetchJSON(`${R2_BASE}/data/config.json`),
-  categoryPage: (cat, page) => fetchJSON(`${R2_BASE}/data/category/${encodeURIComponent(cat)}/page_${page}.json`),
-  feedPage: (type, page) => fetchJSON(`${R2_BASE}/data/feed/${type}/page_${page}.json`),
-  videoDetail: (id) => fetchJSON(`${R2_BASE}/data/video/${id}.json`),
-  videoRecommend: (id) => fetchJSON(`${R2_BASE}/data/video/${id}/recommend.json`),
-  videoComments: (id) => fetchJSON(`${R2_BASE}/data/video/${id}/comments.json`),
-  author: (uid) => fetchJSON(`${R2_BASE}/data/author/${uid}.json`),
-  authorPage: (uid, page) => fetchJSON(`${R2_BASE}/data/author/${uid}/page_${page}.json`),
-  m3u8Url: (id) => `${R2_BASE}/m3u8/VID${id}.m3u8`,
+  config: () => fetchJSON(buildUrl('/data/config.json')),
+  categoryPage: (cat, page) => fetchJSON(buildUrl(`/data/category/${encodeURIComponent(cat)}/page_${page}.json`)),
+  feedPage: (type, page) => fetchJSON(buildUrl(`/data/feed/${type}/page_${page}.json`)),
+  videoDetail: (id) => fetchJSON(buildUrl(`/data/video/${id}.json`)),
+  videoRecommend: (id) => fetchJSON(buildUrl(`/data/video/${id}/recommend.json`)),
+  videoComments: (id) => fetchJSON(buildUrl(`/data/video/${id}/comments.json`)),
+  author: (uid) => fetchJSON(buildUrl(`/data/author/${uid}.json`)),
+  authorPage: (uid, page) => fetchJSON(buildUrl(`/data/author/${uid}/page_${page}.json`)),
+  m3u8Url: (id) => buildUrl(`/m3u8/VID${id}.m3u8`),
 };
 
 // === 图片解密 ===
