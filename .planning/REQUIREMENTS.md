@@ -37,7 +37,7 @@
 
 ### Platform
 
-- [ ] **PLAT-01**: 公开浏览路径在正常访问时不依赖 Worker / Pages Functions 计算，主要由 Pages 静态资源和 R2 数据响应支撑
+- [x] **PLAT-01**: 公开浏览路径在正常访问时不依赖 Worker / Pages Functions 计算，主要由 Pages 静态资源和 R2 数据响应支撑
 - [x] **PLAT-02**: 前端发布、R2 数据发布和少量 API 发布具备可重复的版本化流程，避免页面与数据不一致
 - [ ] **PLAT-03**: 公开静态资源、JSON 和 m3u8 具备明确的缓存策略与失效策略，以支持低成本运行目标
 - [ ] **PLAT-04**: 发布后存在基础校验，能够发现关键页面、关键 JSON 与播放链路的明显错误
@@ -96,7 +96,7 @@
 | PWA-02 | Phase 5 | Pending |
 | STATE-01 | Phase 2 | Pending |
 | STATE-02 | Phase 2 | Pending |
-| PLAT-01 | Phase 1 | Pending |
+| PLAT-01 | Phase 1 | Complete |
 | PLAT-02 | Phase 1 | Complete |
 | PLAT-03 | Phase 1 | Pending |
 | PLAT-04 | Phase 5 | Pending |
