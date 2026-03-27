@@ -4,11 +4,22 @@ import { join } from 'node:path';
 /**
  * 生成 config.json
  */
-export function buildConfig(outDir, { categories, feeds, totalVideos, r2Base }) {
+export function buildConfig(outDir, {
+  categories,
+  feeds,
+  totalVideos,
+  r2Base,
+  releaseId,
+  generatedAt,
+  assetPrefix = '',
+}) {
   mkdirSync(join(outDir, 'data'), { recursive: true });
 
   const config = {
-    version: new Date().toISOString().slice(0, 10),
+    version: releaseId || new Date().toISOString().slice(0, 10),
+    releaseId: releaseId || '',
+    generatedAt: generatedAt || new Date().toISOString(),
+    assetPrefix,
     cdnBase: 'https://imgosne.qqdanb.cn',
     r2Base: r2Base || '',
     categories,
