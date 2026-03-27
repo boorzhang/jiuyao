@@ -4,6 +4,7 @@ import { buildCategories } from './categories.js';
 import { buildFeeds } from './feeds.js';
 import { buildRecommend } from './recommend.js';
 import { buildDetails } from './details.js';
+import { buildAuthors } from './authors.js';
 import { buildConfig } from './config.js';
 
 const ROOT = process.env.JIUYAO_ROOT || process.cwd();
@@ -49,12 +50,17 @@ buildRecommend(allVideos, OUT_DIR);
 console.log(`  已为 ${allVideos.length} 个视频生成推荐`);
 
 // 5. 详情 + 评论
-console.log('\n[5/6] 构建详情和评论...');
+console.log('\n[5/7] 构建详情和评论...');
 const { detailCount, commentCount } = buildDetails(videoMap, COMMENTS_DIR, OUT_DIR);
 console.log(`  详情: ${detailCount}, 评论: ${commentCount}`);
 
-// 6. M3U8 复制
-console.log('\n[6/6] 复制 M3U8...');
+// 6. 作者
+console.log('\n[6/7] 构建作者数据...');
+const { authorCount } = buildAuthors(allVideos, OUT_DIR);
+console.log(`  作者: ${authorCount}`);
+
+// 7. M3U8 复制
+console.log('\n[7/7] 复制 M3U8...');
 if (existsSync(M3U8_DIR)) {
   const m3u8Out = join(OUT_DIR, 'm3u8');
   mkdirSync(m3u8Out, { recursive: true });
@@ -70,7 +76,7 @@ if (existsSync(M3U8_DIR)) {
 }
 
 // 7. Config
-console.log('\n[7/7] 生成 config.json...');
+console.log('\n[8/8] 生成 config.json...');
 const config = buildConfig(OUT_DIR, {
   categories,
   feeds,

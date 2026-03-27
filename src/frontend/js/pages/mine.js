@@ -184,11 +184,13 @@ function showFollows() {
 }
 
 // === 用户主页 ===
-function showUserProfile(publisher) {
+async function showUserProfile(publisher) {
   openOverlay('');
   overlayEl.querySelector('.mine-overlay-tabs').style.display = 'none';
   const followed = publisher.uid ? isFollowed(publisher.uid) : false;
   const body = overlayEl.querySelector('.mine-overlay-body');
+
+  // 先渲染头部
   body.innerHTML = `
     <div class="user-profile">
       <div class="user-profile-bg"></div>
@@ -198,8 +200,8 @@ function showUserProfile(publisher) {
         </div>
         <div class="user-profile-name">${escapeHtml(publisher.name || '用户')}</div>
         <div class="user-profile-uid">UID: ${publisher.uid || ''}</div>
-        ${publisher.summary ? `<div class="user-profile-summary">${escapeHtml(publisher.summary)}</div>` : ''}
-        <div class="user-profile-stats">
+        <div class="user-profile-summary" id="profileSummary"></div>
+        <div class="user-profile-stats" id="profileStats">
           ${publisher.fans ? `<span>${formatCount(publisher.fans)} 粉丝</span>` : ''}
           ${publisher.totalWorks ? `<span>${publisher.totalWorks} 作品</span>` : ''}
         </div>
@@ -210,8 +212,9 @@ function showUserProfile(publisher) {
           <button class="user-profile-msg" id="profileMsgBtn">私信</button>
         </div>
       </div>
-      <div class="user-profile-empty">
-        <div style="padding:40px 20px;text-align:center;color:var(--text-secondary);font-size:13px;">暂无更多内容</div>
+      <div class="user-profile-tabs" id="profileTabs"></div>
+      <div class="user-profile-videos" id="profileVideos">
+        <div style="text-align:center;padding:20px;color:var(--text-secondary)">加载中...</div>
       </div>
     </div>
   `;
@@ -231,6 +234,75 @@ function showUserProfile(publisher) {
   body.querySelector('#profileMsgBtn').addEventListener('click', () => {
     showToast('私信功能需要 VIP 权限，完成后续任务后开放');
   });
+
+  // 加载作者数据
+  if (!publisher.uid) return;
+  try {
+    const authorData = await api.author(publisher.uid);
+
+    // 更新简介和统计
+    const summaryEl = body.querySelector('#profileSummary');
+    if (authorData.summary) summaryEl.textContent = authorData.summary;
+    const statsEl = body.querySelector('#profileStats');
+    statsEl.innerHTML = `
+      <span>${formatCount(authorData.fans || 0)} 粉丝</span>
+      <span>${authorData.videoCount || 0} 作品</span>
+    `;
+
+    // 分长短视频
+    const longVideos = authorData.videos.filter(v => (v.playTime || 0) > 300);
+    const shortVideos = authorData.videos.filter(v => (v.playTime || 0) <= 300);
+
+    const renderTab = (idx) => {
+      const items = idx === 0 ? authorData.videos : idx === 1 ? longVideos : shortVideos;
+      const container = body.querySelector('#profileVideos');
+      if (!items.length) {
+        container.innerHTML = '<div class="mine-empty">暂无作品</div>';
+        return;
+      }
+      container.innerHTML = `<div class="user-video-grid">${items.map(v => `
+        <div class="user-video-card" data-vid="${v.id}">
+          <div class="user-video-cover">
+            <img data-decrypt-src="${escapeHtml(v.cover || '')}" alt="">
+            <span class="user-video-duration">${formatTime(v.playTime)}</span>
+            <span class="user-video-plays">▶ ${formatCount(v.playCount)}</span>
+          </div>
+          <div class="user-video-title">${escapeHtml(v.title)}</div>
+        </div>
+      `).join('')}</div>`;
+      decryptImages(container);
+    };
+
+    // Tabs
+    const tabsEl = body.querySelector('#profileTabs');
+    const tabLabels = [
+      `全部 ${authorData.videoCount}`,
+      `长视频 ${longVideos.length}`,
+      `短视频 ${shortVideos.length}`,
+    ];
+    tabsEl.innerHTML = tabLabels.map((t, i) =>
+      `<div class="overlay-tab ${i === 0 ? 'active' : ''}" data-idx="${i}">${t}</div>`
+    ).join('');
+    tabsEl.onclick = (e) => {
+      const tab = e.target.closest('.overlay-tab');
+      if (!tab) return;
+      tabsEl.querySelectorAll('.overlay-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderTab(parseInt(tab.dataset.idx));
+    };
+    renderTab(0);
+
+    // 视频卡片点击
+    body.querySelector('#profileVideos').addEventListener('click', (e) => {
+      const card = e.target.closest('.user-video-card');
+      if (card) {
+        closeOverlay();
+        window.dispatchEvent(new CustomEvent('openDetail', { detail: { id: card.dataset.vid } }));
+      }
+    });
+  } catch {
+    body.querySelector('#profileVideos').innerHTML = '<div class="mine-empty">暂无作品数据</div>';
+  }
 }
 
 // === Toast ===

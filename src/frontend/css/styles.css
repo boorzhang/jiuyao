@@ -224,18 +224,31 @@ a { color:inherit; text-decoration:none; }
 }
 .sv-action-btn svg { width:30px; height:30px; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
 .sv-action-btn.liked svg { fill:var(--accent); stroke:var(--accent); }
-.sv-actions .sv-action-avatar {
-  position:relative; margin-bottom:6px;
+/* Avatar + follow badge wrapper */
+.sv-action-avatar-wrap {
+  position:relative; margin-bottom:10px;
+}
+.sv-action-avatar {
+  cursor:pointer;
 }
 .sv-action-avatar img {
   width:44px; height:44px; border-radius:50%; object-fit:cover;
   border:2px solid #fff;
 }
-.sv-action-avatar .plus-badge {
-  position:absolute; bottom:-6px; left:50%; transform:translateX(-50%);
-  width:18px; height:18px; background:var(--accent); border-radius:50%;
+.sv-action-avatar-wrap .plus-badge {
+  position:absolute; bottom:-8px; left:50%; transform:translateX(-50%);
+  width:20px; height:20px; background:var(--accent); border-radius:50%;
   display:flex; align-items:center; justify-content:center;
   font-size:14px; font-weight:bold; line-height:1;
+  cursor:pointer; z-index:2;
+  transition: all .3s ease;
+}
+.sv-action-avatar-wrap .plus-badge:active {
+  transform:translateX(-50%) scale(1.2);
+}
+.sv-action-avatar-wrap .plus-badge.follow-anim {
+  background:#22c55e; transform:translateX(-50%) scale(1.4);
+  opacity:0; transition: all .5s ease;
 }
 .sv-disc {
   width:40px; height:40px; border-radius:50%;
@@ -615,6 +628,47 @@ a { color:inherit; text-decoration:none; }
   max-width:80vw; text-align:center;
 }
 .app-toast.show { opacity:1; }
+
+/* ===== USER PROFILE TABS + GRID ===== */
+.user-profile-tabs {
+  display:flex; border-bottom:1px solid rgba(255,255,255,0.08); margin-top:16px;
+}
+.user-profile-tabs .overlay-tab {
+  flex:1; text-align:center; padding:10px 0; font-size:13px;
+  color:var(--text-secondary); cursor:pointer; position:relative;
+}
+.user-profile-tabs .overlay-tab.active {
+  color:var(--text-active); font-weight:600;
+}
+.user-profile-tabs .overlay-tab.active::after {
+  content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:24px; height:2px; background:var(--accent); border-radius:1px;
+}
+.user-video-grid {
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; padding:2px;
+}
+.user-video-card { cursor:pointer; overflow:hidden; }
+.user-video-card:active { opacity:0.8; }
+.user-video-cover {
+  position:relative; width:100%; aspect-ratio:9/16; background:#0d1b2a; overflow:hidden;
+}
+.user-video-cover img {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.user-video-duration {
+  position:absolute; bottom:4px; right:4px;
+  font-size:10px; background:rgba(0,0,0,0.7); padding:1px 4px; border-radius:2px;
+  color:rgba(255,255,255,0.85);
+}
+.user-video-plays {
+  position:absolute; bottom:4px; left:4px;
+  font-size:10px; color:rgba(255,255,255,0.75);
+}
+.user-video-title {
+  font-size:11px; padding:4px; line-height:1.3;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
 
 /* Heart animation */
 @keyframes heartPop {

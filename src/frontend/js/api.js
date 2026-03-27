@@ -24,6 +24,7 @@ export const api = {
   videoDetail: (id) => fetchJSON(`${R2_BASE}/data/video/${id}.json`),
   videoRecommend: (id) => fetchJSON(`${R2_BASE}/data/video/${id}/recommend.json`),
   videoComments: (id) => fetchJSON(`${R2_BASE}/data/video/${id}/comments.json`),
+  author: (uid) => fetchJSON(`${R2_BASE}/data/author/${uid}.json`),
   m3u8Url: (id) => `${R2_BASE}/m3u8/VID${id}.m3u8`,
 };
 

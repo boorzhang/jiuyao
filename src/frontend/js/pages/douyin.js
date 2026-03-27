@@ -131,9 +131,11 @@ function dySlideHTML(v, position) {
       </div>
     </div>
     <div class="sv-actions">
-      <div class="sv-action-avatar" data-action="avatar">
-        ${v.publisher?.portrait ? `<img data-decrypt-src="${escapeHtml(v.publisher.portrait)}" alt="">` : '<div style="width:44px;height:44px;border-radius:50%;background:#333"></div>'}
-        ${followed ? '' : '<div class="plus-badge">+</div>'}
+      <div class="sv-action-avatar-wrap">
+        <div class="sv-action-avatar" data-action="avatar">
+          ${v.publisher?.portrait ? `<img data-decrypt-src="${escapeHtml(v.publisher.portrait)}" alt="">` : '<div style="width:44px;height:44px;border-radius:50%;background:#333"></div>'}
+        </div>
+        ${followed ? '' : '<div class="plus-badge" data-action="plus-follow">+</div>'}
       </div>
       <div class="sv-action-btn ${liked ? 'liked' : ''}" data-action="like">
         <svg viewBox="0 0 24 24" fill="${liked ? 'var(--accent)' : 'none'}" stroke="${liked ? 'var(--accent)' : 'currentColor'}" stroke-width="2">
@@ -338,6 +340,21 @@ export async function initDouyin(cfg) {
       if (cur?.publisher?.uid) {
         toggleFollow(cur.publisher);
         dyRender();
+      }
+      return;
+    }
+
+    // +号点击 → 关注 + 动画
+    const plusBadge = e.target.closest('.plus-badge[data-action="plus-follow"]');
+    if (plusBadge) {
+      e.stopPropagation();
+      const cur = feed()[dy.idx];
+      if (cur?.publisher?.uid) {
+        toggleFollow(cur.publisher);
+        // 关注成功动画
+        plusBadge.classList.add('follow-anim');
+        plusBadge.textContent = '✓';
+        setTimeout(() => dyRender(), 600);
       }
       return;
     }
