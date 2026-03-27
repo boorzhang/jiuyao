@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>91Porn</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+
+<!-- ===== HOME PAGE ===== -->
+<div class="page active" id="page-home">
+  <div class="home-header">
+    <div class="home-logo">
+      <div class="logo-circle">91</div>
+      <span class="logo-text">91porn</span>
+      <span class="logo-desc">亚洲最火成人网站</span>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+  </div>
+  <div class="video-grid" id="homeGrid"></div>
+</div>
+
+<!-- ===== DOUYIN PAGE ===== -->
+<div class="page" id="page-douyin">
+  <div class="dy-container">
+    <div class="dy-top-bar">
+      <div class="dy-top-tab active" data-dy-tab="recommend">推荐</div>
+      <div class="dy-top-tab" data-dy-tab="latest">最新</div>
+    </div>
+    <div class="dy-swipe-viewport" id="dyViewport"></div>
+    <div class="dy-progress-bar"><div class="dy-progress-fill" id="dyProgress"></div></div>
+    <div class="dy-swipe-hint" id="dyHint">上滑查看更多</div>
+  </div>
+</div>
+
+<!-- ===== MINE PAGE ===== -->
+<div class="page" id="page-mine">
+  <div class="mine-page">
+    <div class="mine-header">
+      <div class="mine-avatar">👤</div>
+      <div class="mine-info">
+        <div class="mine-name">游客用户</div>
+        <div class="mine-uid">UID: ...</div>
+      </div>
+    </div>
+    <div class="mine-vip-banner">
+      <div class="mine-vip-left">
+        <div class="mine-vip-title">开通VIP会员</div>
+        <div class="mine-vip-desc">免费观看全站百万视频</div>
+      </div>
+      <button class="mine-vip-btn">立即开通</button>
+    </div>
+    <div class="mine-stats">
+      <div class="mine-stat"><div class="num">0</div><div class="label">关注</div></div>
+      <div class="mine-stat"><div class="num">0</div><div class="label">粉丝</div></div>
+      <div class="mine-stat"><div class="num">0</div><div class="label">获赞</div></div>
+      <div class="mine-stat"><div class="num">0</div><div class="label">作品</div></div>
+    </div>
+    <div class="mine-section-title">常用功能</div>
+    <div class="mine-menu">
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span class="menu-text">我的收藏</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="menu-text">观看历史</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span class="menu-text">我的钱包</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="menu-text">邀请好友</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span class="menu-text">会员中心</span>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+    <div class="mine-section-title">其他</div>
+    <div class="mine-menu">
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="menu-text">设置</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span class="menu-text">帮助与反馈</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="mine-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        <span class="menu-text">关于我们</span>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VIDEO DETAIL OVERLAY ===== -->
+<div class="detail-page" id="detailPage">
+  <div class="detail-back">
+    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="#fff" stroke-width="2"/></svg>
+  </div>
+  <div class="detail-video-area">
+    <img id="detailCover" src="" alt="">
+    <div class="play-btn">
+      <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    </div>
+  </div>
+  <div class="detail-content">
+    <div class="detail-tabs">
+      <div class="detail-tab active">简介</div>
+      <div class="detail-tab">评论</div>
+    </div>
+    <div id="detailIntro">
+      <div class="detail-intro">
+        <div class="detail-title" id="detailTitle"></div>
+        <div class="detail-tags" id="detailTags"></div>
+        <div class="detail-actions">
+          <div class="left" id="detailPlayCount"></div>
+          <div class="right">
+            <div class="detail-action-item" id="detailLike">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+              <span></span>
+            </div>
+            <div class="detail-action-item" id="detailCollect">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              <span></span>
+            </div>
+            <div class="detail-action-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              <span>分享</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-recommend">
+        <div class="section-title">相关推荐</div>
+        <div class="video-grid" id="detailRecommend"></div>
+      </div>
+    </div>
+    <div class="detail-comments" id="detailComments">
+      <div id="detailCommentList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BOTTOM TAB BAR ===== -->
+<div class="tab-bar">
+  <div class="tab-item active" data-tab="home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>主页</span>
+  </div>
+  <div class="tab-item" data-tab="douyin">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    <span>抖音</span>
+  </div>
+  <div class="tab-item" data-tab="mine">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>我的</span>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

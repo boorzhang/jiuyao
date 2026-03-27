@@ -1,0 +1,16 @@
+{
+  "name": "91Porn",
+  "short_name": "91Porn",
+  "description": "亚洲最火成人视频",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23e94560'/><text x='50' y='62' font-size='30' font-weight='bold' text-anchor='middle' fill='white'>91</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
