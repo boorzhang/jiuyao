@@ -12,7 +12,7 @@
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: 静态分发底座** - 固化 Pages / R2 / Worker 边界、版本化发布和缓存策略
+- [x] **Phase 1: 静态分发底座** - 固化 Pages / R2 / Worker 边界、版本化发布和缓存策略
 - [ ] **Phase 2: 公开浏览入口** - 让游客无需登录即可稳定浏览首页、分类、分页和详情入口
 - [ ] **Phase 3: 播放与连续消费** - 打通详情页播放、相关推荐和静态评论闭环
 - [ ] **Phase 4: SEO 索引资产** - 为公开页与允许索引的详情页建立可抓取、可理解、可提交的 SEO 资产
@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**:
 - [x] `01-01` 发布版本基线 - 统一 `RELEASE_ID`、补齐锁文件与共享构建入口
 - [x] `01-02` Cloudflare 发布边界 - 去除 Worker 站点托管、用同版 CI 发布 Pages 与 R2
-- [ ] `01-03` 缓存与运行时一致性 - 固定播放器版本、引入 release-aware 前端与缓存合同
+- [x] `01-03` 缓存与运行时一致性 - 固定播放器版本、引入 release-aware 前端与缓存合同
 
 ### Phase 2: 公开浏览入口
 **Goal**: 公开访客无需账号即可从首页进入分类与详情，并在刷新后继续保持本地浏览连续性
@@ -98,7 +98,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 静态分发底座 | 2/3 | In Progress | - |
+| 1. 静态分发底座 | 3/3 | Complete | 2026-03-27 |
 | 2. 公开浏览入口 | 0/TBD | Not started | - |
 | 3. 播放与连续消费 | 0/TBD | Not started | - |
 | 4. SEO 索引资产 | 0/TBD | Not started | - |
