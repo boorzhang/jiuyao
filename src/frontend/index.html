@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1a1a2e">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="/vendor/hls.min.js"></script>
 </head>
@@ -21,7 +21,10 @@
       <span class="logo-text">91porn</span>
       <span class="logo-desc">亚洲最火成人网站</span>
     </div>
-    <div class="cat-tabs" id="catTabs"></div>
+    <div class="cat-tabs-shell" id="catTabsShell">
+      <div class="cat-tabs" id="catTabs"></div>
+      <div class="cat-tabs-hint" id="catTabsHint" hidden>左右滑动查看更多分类</div>
+    </div>
   </div>
   <div class="video-grid" id="homeGrid"></div>
 </div>

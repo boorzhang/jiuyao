@@ -51,6 +51,33 @@ function destroyCurrentVideo() {
   }
 }
 
+// 根据媒体真实宽高给 slide 打上横版/竖版类，保证手机版完整显示且不溢出。
+function setSlideMediaOrientation(slide, width, height) {
+  if (!slide || !width || !height) return;
+
+  slide.classList.remove('is-landscape', 'is-portrait', 'is-square');
+  if (width > height * 1.1) {
+    slide.classList.add('is-landscape');
+  } else if (height > width * 1.1) {
+    slide.classList.add('is-portrait');
+  } else {
+    slide.classList.add('is-square');
+  }
+}
+
+function syncCoverOrientation(slide) {
+  const cover = slide?.querySelector('.sv-cover');
+  if (!cover) return;
+
+  const apply = () => setSlideMediaOrientation(slide, cover.naturalWidth, cover.naturalHeight);
+  if (cover.complete && cover.naturalWidth) {
+    apply();
+    return;
+  }
+
+  cover.addEventListener('load', apply, { once: true });
+}
+
 function playCurrentSlide() {
   destroyCurrentVideo();
 
@@ -74,11 +101,23 @@ function playCurrentSlide() {
     video.autoplay = true;
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
-    video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;z-index:0;background:#000;';
-    // 插入到封面图之后
+    video.addEventListener('loadedmetadata', () => {
+      setSlideMediaOrientation(slide, video.videoWidth, video.videoHeight);
+    });
+    video.addEventListener('loadeddata', () => {
+      slide.classList.add('has-video-frame');
+    }, { once: true });
+
+    // 插入到媒体容器中，让横版和竖版都能共用同一套布局约束。
+    const mediaShell = slide.querySelector('.sv-media-shell');
     const coverImg = slide.querySelector('.sv-cover');
-    if (coverImg) coverImg.after(video);
-    else slide.prepend(video);
+    if (coverImg) {
+      coverImg.after(video);
+    } else if (mediaShell) {
+      mediaShell.append(video);
+    } else {
+      slide.prepend(video);
+    }
   }
 
   const src = api.m3u8Url(cur.id);
@@ -113,7 +152,10 @@ function dySlideHTML(v, position) {
   const followed = v.publisher?.uid ? isFollowed(v.publisher.uid) : false;
 
   return `<div class="dy-slide" data-pos="${position}" data-vid="${v.id}">
-    <img class="sv-cover" data-decrypt-src="${escapeHtml(v.cover || '')}" alt="">
+    <div class="sv-media-shell">
+      <img class="sv-backdrop" data-decrypt-src="${escapeHtml(v.cover || '')}" alt="" aria-hidden="true">
+      <img class="sv-cover" data-decrypt-src="${escapeHtml(v.cover || '')}" alt="">
+    </div>
     <div class="sv-play-center" id="playIcon-${position}">
       <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     </div>
@@ -185,6 +227,7 @@ function dyRender() {
 
   // 触发图片解密
   decryptImages(vp);
+  vp.querySelectorAll('.dy-slide').forEach(syncCoverOrientation);
 
   vp.querySelectorAll('.dy-slide').forEach(s => {
     if (s.dataset.pos === 'prev') s.style.transform = 'translateY(-100%)';

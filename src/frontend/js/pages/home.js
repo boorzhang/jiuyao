@@ -8,6 +8,22 @@ let totalPages = 1;
 let loading = false;
 let allLoaded = false;
 
+// 同步移动端分类栏提示，只在存在横向溢出且用户还没滚动时展示。
+function syncCatTabsHint() {
+  const shell = document.getElementById('catTabsShell');
+  const tabs = document.getElementById('catTabs');
+  const hint = document.getElementById('catTabsHint');
+  if (!shell || !tabs || !hint) return;
+
+  const hasOverflow = tabs.scrollWidth - tabs.clientWidth > 8;
+  const untouched = tabs.scrollLeft <= 4;
+  const shouldShow = hasOverflow && untouched && window.innerWidth < 768;
+
+  shell.classList.toggle('has-overflow', hasOverflow && untouched);
+  hint.hidden = !shouldShow;
+  hint.classList.toggle('visible', shouldShow);
+}
+
 export function renderVideoCard(v, cfg) {
   const badge = v.freeArea ? '' :
     (v.originCoins === 0 ? '<div class="badge badge-vip">VIP</div>' :
@@ -41,6 +57,7 @@ function renderCatTabs() {
   el.innerHTML = config.categories.map(c =>
     `<div class="cat-tab${c.slug === currentCat ? ' active' : ''}" data-cat="${c.slug}">${escapeHtml(c.name)}</div>`
   ).join('');
+  syncCatTabsHint();
 }
 
 async function loadPage() {
@@ -79,10 +96,14 @@ export async function initHome(cfg) {
 
   renderCatTabs();
 
-  document.getElementById('catTabs').addEventListener('click', (e) => {
+  const catTabs = document.getElementById('catTabs');
+
+  catTabs.addEventListener('click', (e) => {
     const tab = e.target.closest('.cat-tab');
     if (tab) switchCat(tab.dataset.cat);
   });
+  catTabs.addEventListener('scroll', syncCatTabsHint, { passive: true });
+  window.addEventListener('resize', syncCatTabsHint);
 
   const page = document.getElementById('page-home');
   window.addEventListener('scroll', () => {
@@ -100,4 +121,5 @@ export async function initHome(cfg) {
   });
 
   await loadPage();
+  syncCatTabsHint();
 }

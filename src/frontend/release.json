@@ -1,0 +1,8 @@
+{
+  "releaseId": "dev-local",
+  "generatedAt": "2026-03-27T00:00:00.000Z",
+  "pagesBase": "",
+  "dataBase": "http://localhost:3001",
+  "apiBase": "",
+  "assetPrefix": ""
+}
