@@ -7,7 +7,8 @@
     "dev": "node scripts/dev-server.js",
     "build:data": "node src/build/index.js",
     "build:frontend": "node scripts/build-frontend.js",
-    "test": "node --test 'tests/*.test.js'",
+    "build:release": "node scripts/build-release.js",
+    "test": "node --test 'tests/*.test.js' 'tests/*.test.cjs'",
     "upload:r2": "bash scripts/upload-r2.sh"
   },
   "engines": {
