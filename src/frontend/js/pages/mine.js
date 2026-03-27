@@ -235,7 +235,7 @@ async function showUserProfile(publisher) {
     showToast('私信功能需要 VIP 权限，完成后续任务后开放');
   });
 
-  // 加载作者数据
+  // 加载作者数据（分页）
   if (!publisher.uid) return;
   try {
     const authorData = await api.author(publisher.uid);
@@ -249,55 +249,105 @@ async function showUserProfile(publisher) {
       <span>${authorData.videoCount || 0} 作品</span>
     `;
 
-    // 分长短视频
-    const longVideos = authorData.videos.filter(v => (v.playTime || 0) > 300);
-    const shortVideos = authorData.videos.filter(v => (v.playTime || 0) <= 300);
+    // 分页状态
+    const state = {
+      allVideos: [...authorData.videos],
+      currentPage: 1,
+      totalPages: authorData.totalPages || 1,
+      loading: false,
+      activeTab: 0, // 0=全部, 1=长, 2=短
+    };
 
-    const renderTab = (idx) => {
-      const items = idx === 0 ? authorData.videos : idx === 1 ? longVideos : shortVideos;
+    function videoCardHTML(v) {
+      return `<div class="user-video-card" data-vid="${v.id}">
+        <div class="user-video-cover">
+          <img data-decrypt-src="${escapeHtml(v.cover || '')}" alt="">
+          <span class="user-video-duration">${formatTime(v.playTime)}</span>
+          <span class="user-video-plays">▶ ${formatCount(v.playCount)}</span>
+        </div>
+        <div class="user-video-title">${escapeHtml(v.title)}</div>
+      </div>`;
+    }
+
+    function filteredVideos() {
+      if (state.activeTab === 1) return state.allVideos.filter(v => (v.playTime || 0) > 300);
+      if (state.activeTab === 2) return state.allVideos.filter(v => (v.playTime || 0) <= 300);
+      return state.allVideos;
+    }
+
+    function renderGrid() {
       const container = body.querySelector('#profileVideos');
+      const items = filteredVideos();
       if (!items.length) {
         container.innerHTML = '<div class="mine-empty">暂无作品</div>';
         return;
       }
-      container.innerHTML = `<div class="user-video-grid">${items.map(v => `
-        <div class="user-video-card" data-vid="${v.id}">
-          <div class="user-video-cover">
-            <img data-decrypt-src="${escapeHtml(v.cover || '')}" alt="">
-            <span class="user-video-duration">${formatTime(v.playTime)}</span>
-            <span class="user-video-plays">▶ ${formatCount(v.playCount)}</span>
-          </div>
-          <div class="user-video-title">${escapeHtml(v.title)}</div>
-        </div>
-      `).join('')}</div>`;
+      container.innerHTML = `<div class="user-video-grid">${items.map(videoCardHTML).join('')}</div>`;
+      if (state.currentPage < state.totalPages) {
+        container.insertAdjacentHTML('beforeend',
+          '<div class="user-load-more" id="profileLoadMore">加载更多</div>');
+      }
       decryptImages(container);
-    };
+    }
+
+    async function loadMoreVideos() {
+      if (state.loading || state.currentPage >= state.totalPages) return;
+      state.loading = true;
+      const btn = body.querySelector('#profileLoadMore');
+      if (btn) btn.textContent = '加载中...';
+      try {
+        const nextPage = state.currentPage + 1;
+        const pageData = await api.authorPage(publisher.uid, nextPage);
+        state.allVideos.push(...pageData.videos);
+        state.currentPage = nextPage;
+        renderGrid();
+      } catch { /* ignore */ }
+      state.loading = false;
+    }
+
+    function countByType() {
+      const long = state.allVideos.filter(v => (v.playTime || 0) > 300).length;
+      const short = state.allVideos.filter(v => (v.playTime || 0) <= 300).length;
+      return { long, short, all: state.allVideos.length };
+    }
 
     // Tabs
     const tabsEl = body.querySelector('#profileTabs');
-    const tabLabels = [
-      `全部 ${authorData.videoCount}`,
-      `长视频 ${longVideos.length}`,
-      `短视频 ${shortVideos.length}`,
-    ];
-    tabsEl.innerHTML = tabLabels.map((t, i) =>
-      `<div class="overlay-tab ${i === 0 ? 'active' : ''}" data-idx="${i}">${t}</div>`
-    ).join('');
+    function renderTabs() {
+      const c = countByType();
+      const labels = [`全部 ${authorData.videoCount}`, `长视频 ${c.long}+`, `短视频 ${c.short}+`];
+      tabsEl.innerHTML = labels.map((t, i) =>
+        `<div class="overlay-tab ${i === state.activeTab ? 'active' : ''}" data-idx="${i}">${t}</div>`
+      ).join('');
+    }
+    renderTabs();
     tabsEl.onclick = (e) => {
       const tab = e.target.closest('.overlay-tab');
       if (!tab) return;
-      tabsEl.querySelectorAll('.overlay-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      renderTab(parseInt(tab.dataset.idx));
+      state.activeTab = parseInt(tab.dataset.idx);
+      renderTabs();
+      renderGrid();
     };
-    renderTab(0);
 
-    // 视频卡片点击
-    body.querySelector('#profileVideos').addEventListener('click', (e) => {
+    renderGrid();
+
+    // 视频卡片点击 + 加载更多
+    const videosContainer = body.querySelector('#profileVideos');
+    videosContainer.addEventListener('click', (e) => {
       const card = e.target.closest('.user-video-card');
       if (card) {
         closeOverlay();
         window.dispatchEvent(new CustomEvent('openDetail', { detail: { id: card.dataset.vid } }));
+        return;
+      }
+      if (e.target.closest('#profileLoadMore')) loadMoreVideos();
+    });
+
+    // 滚动加载
+    const overlayBody = overlayEl.querySelector('.mine-overlay-body');
+    overlayBody.addEventListener('scroll', () => {
+      if (overlayBody.scrollHeight - overlayBody.scrollTop - overlayBody.clientHeight < 300) {
+        loadMoreVideos();
       }
     });
   } catch {

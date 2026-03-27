@@ -1,8 +1,11 @@
 _by_id
 _by_tags
+_by_author
 comments
 html
 m3u8
 .DS_Store
 r2-data
 dist
+node_modules
+*.bak
