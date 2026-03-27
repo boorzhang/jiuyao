@@ -9,6 +9,3 @@ bucket_name = "jiuyao-data"
 [[kv_namespaces]]
 binding = "MEMBERSHIP_KV"
 id = "placeholder-kv-id"
-
-[site]
-bucket = "./dist"
