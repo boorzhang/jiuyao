@@ -6,6 +6,12 @@
 
 ```text
 /var/zip/jiuyao/scripts
+├── comment_export/
+│   ├── comment_export.cjs
+│   ├── comment_export.js
+│   ├── comment_export_core.cjs
+│   ├── comment_export_core.test.cjs
+│   └── README.md
 ├── export/
 │   ├── video_json_export.js
 │   └── video_json_export_full.js
@@ -32,6 +38,22 @@
 - `video_json_export_full.js`
   - 全量视频导出主脚本
   - 用它产出了当前的 `75186` 条视频数据
+
+### comment_export
+
+- `comment_export.cjs`
+  - 当前评论抓取主脚本
+  - 已修复 `package.json` 的 ESM/CJS 边界问题
+  - 支持 `WORKER_TOTAL` / `WORKER_INDEX` 分片续跑
+- `comment_export.js`
+  - ESM 兼容入口
+  - 主要用于继续兼容原先的调用方式
+- `comment_export_core.cjs`
+  - 评论抓取纯逻辑
+  - 包含评论过滤、延后重试、分片辅助等可测试逻辑
+- `comment_export_core.test.cjs`
+  - 评论抓取核心回归测试
+  - 当前包含 `13` 条用例
 
 ### frontend
 
@@ -72,5 +94,5 @@
 1. `export/video_json_export_full.js`
 2. `frontend/video2.js`
 3. `frontend/details-efa47c28.js`
-4. `/var/zip/jiuyao/comment_export.js`
-5. `/var/zip/jiuyao/lib/comment_export_core.js`
+4. `comment_export/comment_export.cjs`
+5. `comment_export/comment_export_core.cjs`
