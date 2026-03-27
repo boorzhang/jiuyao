@@ -21,7 +21,7 @@ export function slimVideo(v) {
     originCoins: raw.originCoins || 0,
     freeArea: raw.freeArea || false,
     tags: (raw.tags || []).slice(0, 2).map(t => t.name || t),
-    publisher: raw.publisher ? { name: raw.publisher.name } : null,
+    publisher: raw.publisher ? { uid: raw.publisher.uid, name: raw.publisher.name, portrait: raw.publisher.portrait || '' } : null,
     newsType: v.newsType || raw.newsType || '',
   };
 }

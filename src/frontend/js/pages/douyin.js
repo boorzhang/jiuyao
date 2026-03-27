@@ -1,7 +1,8 @@
 import { api } from '../api.js';
-import { formatCount, escapeHtml } from '../utils.js';
+import { formatCount, escapeHtml, timeAgo } from '../utils.js';
 import { isLiked, toggleLike, isCollected, toggleCollection, isFollowed, toggleFollow, addHistory } from '../store.js';
 import { decryptImages } from '../imgloader.js';
+import { showToast } from './mine.js';
 
 let config = null;
 let currentHls = null;
@@ -55,6 +56,9 @@ function playCurrentSlide() {
 
   const cur = feed()[dy.idx];
   if (!cur) return;
+
+  // 记录短视频历史
+  addHistory(cur, 'short');
 
   const slide = document.querySelector('.dy-slide[data-pos="current"]');
   if (!slide) return;
@@ -117,7 +121,7 @@ function dySlideHTML(v, position) {
       <div class="sv-publisher">
         ${v.publisher?.portrait ? `<img class="sv-avatar" data-decrypt-src="${escapeHtml(v.publisher.portrait)}" alt="">` : ''}
         <span class="sv-name">@${escapeHtml(v.publisher?.name || '用户')}</span>
-        <button class="sv-follow-btn ${followed ? 'followed' : ''}" data-action="follow">${followed ? '已关注' : '+ 关注'}</button>
+        ${followed ? '' : '<button class="sv-follow-btn" data-action="follow">+ 关注</button>'}
       </div>
       <div class="sv-title">${escapeHtml(v.title)}</div>
       ${tags.length ? `<div class="sv-tags">${tags.map(t => `<span class="sv-tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
@@ -127,9 +131,9 @@ function dySlideHTML(v, position) {
       </div>
     </div>
     <div class="sv-actions">
-      <div class="sv-action-avatar">
+      <div class="sv-action-avatar" data-action="avatar">
         ${v.publisher?.portrait ? `<img data-decrypt-src="${escapeHtml(v.publisher.portrait)}" alt="">` : '<div style="width:44px;height:44px;border-radius:50%;background:#333"></div>'}
-        <div class="plus-badge">+</div>
+        ${followed ? '' : '<div class="plus-badge">+</div>'}
       </div>
       <div class="sv-action-btn ${liked ? 'liked' : ''}" data-action="like">
         <svg viewBox="0 0 24 24" fill="${liked ? 'var(--accent)' : 'none'}" stroke="${liked ? 'var(--accent)' : 'currentColor'}" stroke-width="2">
@@ -326,13 +330,43 @@ export async function initDouyin(cfg) {
   // 双击点赞
   let lastTapTime = 0;
   vp.addEventListener('click', (e) => {
+    // 关注按钮
+    const followBtn = e.target.closest('.sv-follow-btn');
+    if (followBtn) {
+      e.stopPropagation();
+      const cur = feed()[dy.idx];
+      if (cur?.publisher?.uid) {
+        toggleFollow(cur.publisher);
+        dyRender();
+      }
+      return;
+    }
+
+    // 头像点击 → 用户主页
+    const avatarBtn = e.target.closest('.sv-action-avatar');
+    if (avatarBtn) {
+      e.stopPropagation();
+      const cur = feed()[dy.idx];
+      if (cur?.publisher) {
+        window.dispatchEvent(new CustomEvent('openUserProfile', { detail: cur.publisher }));
+      }
+      return;
+    }
+
     const actionBtn = e.target.closest('.sv-action-btn');
     if (actionBtn) {
       e.stopPropagation();
       const action = actionBtn.dataset.action;
+      const cur = feed()[dy.idx];
+      if (!cur) return;
       if (action === 'like') {
-        const cur = feed()[dy.idx];
-        if (cur) { toggleLike(cur.id); dyRender(); }
+        toggleLike(cur.id); dyRender();
+      } else if (action === 'collect') {
+        toggleCollection(cur, 'short'); dyRender();
+      } else if (action === 'share') {
+        showSharePanel();
+      } else if (action === 'comment') {
+        showCommentPanel(cur.id);
       }
       return;
     }
@@ -363,4 +397,117 @@ export async function initDouyin(cfg) {
 
   await loadNextPage();
   dyRender();
+}
+
+// === 分享面板 ===
+function showSharePanel() {
+  let panel = document.getElementById('dySharePanel');
+  if (panel) { panel.remove(); return; }
+
+  panel = document.createElement('div');
+  panel.id = 'dySharePanel';
+  panel.className = 'dy-bottom-panel';
+  panel.innerHTML = `
+    <div class="dy-panel-mask"></div>
+    <div class="dy-panel-content">
+      <div class="dy-panel-header">
+        <span>分享</span>
+        <span class="dy-panel-close">&times;</span>
+      </div>
+      <div class="dy-panel-body" style="text-align:center;padding:20px">
+        <div id="shareQrCode" style="display:inline-block;background:#fff;padding:12px;border-radius:8px"></div>
+        <div style="margin-top:12px;font-size:13px;color:var(--text-secondary)">长按或截图保存二维码分享给好友</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-secondary);word-break:break-all">${location.href}</div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+  requestAnimationFrame(() => panel.classList.add('open'));
+
+  // 简易 QR — 用 canvas 画一个带文字的占位
+  const qr = panel.querySelector('#shareQrCode');
+  const canvas = document.createElement('canvas');
+  canvas.width = 160; canvas.height = 160;
+  const ctx = canvas.getContext('2d');
+  // 简易格子模式模拟 QR
+  ctx.fillStyle = '#000';
+  const url = location.href;
+  for (let y = 0; y < 20; y++) {
+    for (let x = 0; x < 20; x++) {
+      const charCode = url.charCodeAt((y * 20 + x) % url.length);
+      if ((charCode + x * y) % 3 !== 0) {
+        ctx.fillRect(x * 8, y * 8, 7, 7);
+      }
+    }
+  }
+  // 定位角
+  for (const [ox, oy] of [[0,0],[13,0],[0,13]]) {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(ox*8, oy*8, 56, 56);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(ox*8+8, oy*8+8, 40, 40);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(ox*8+16, oy*8+16, 24, 24);
+  }
+  qr.appendChild(canvas);
+
+  const close = () => { panel.classList.remove('open'); setTimeout(() => panel.remove(), 300); };
+  panel.querySelector('.dy-panel-mask').addEventListener('click', close);
+  panel.querySelector('.dy-panel-close').addEventListener('click', close);
+}
+
+// === 评论面板 ===
+async function showCommentPanel(videoId) {
+  let panel = document.getElementById('dyCommentPanel');
+  if (panel) { panel.remove(); return; }
+
+  panel = document.createElement('div');
+  panel.id = 'dyCommentPanel';
+  panel.className = 'dy-bottom-panel';
+  panel.innerHTML = `
+    <div class="dy-panel-mask"></div>
+    <div class="dy-panel-content dy-panel-tall">
+      <div class="dy-panel-header">
+        <span>评论</span>
+        <span class="dy-panel-close">&times;</span>
+      </div>
+      <div class="dy-panel-body" style="padding:0 16px">
+        <div style="text-align:center;padding:20px;color:var(--text-secondary)">加载中...</div>
+      </div>
+      <div class="dy-comment-input">
+        <input type="text" placeholder="当前免费用户禁止评论，仅VIP可评论" disabled>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+  requestAnimationFrame(() => panel.classList.add('open'));
+
+  const close = () => { panel.classList.remove('open'); setTimeout(() => panel.remove(), 300); };
+  panel.querySelector('.dy-panel-mask').addEventListener('click', close);
+  panel.querySelector('.dy-panel-close').addEventListener('click', close);
+
+  // 加载评论
+  const body = panel.querySelector('.dy-panel-body');
+  try {
+    const comments = await api.videoComments(videoId);
+    if (!comments || comments.length === 0) {
+      body.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-secondary);font-size:13px">暂无评论</div>';
+      return;
+    }
+    body.innerHTML = comments.map(c => `
+      <div class="dy-comment-item">
+        <div class="dy-comment-avatar">
+          ${c.userPortrait ? `<img data-decrypt-src="${escapeHtml(c.userPortrait)}" alt="">` : '<div style="width:32px;height:32px;border-radius:50%;background:#333"></div>'}
+        </div>
+        <div class="dy-comment-body">
+          <div class="dy-comment-name">${escapeHtml(c.userName)} <span class="dy-comment-meta">${c.city ? escapeHtml(c.city) : ''} · ${timeAgo(c.createdAt)}</span></div>
+          <div class="dy-comment-text">${escapeHtml(c.content)}</div>
+          ${c.likeCount > 0 ? `<div class="dy-comment-likes">♥ ${c.likeCount}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+    decryptImages(body);
+  } catch {
+    body.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-secondary);font-size:13px">暂无评论</div>';
+  }
 }

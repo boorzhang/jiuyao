@@ -1,6 +1,6 @@
 import { api, decryptImageUrl } from '../api.js';
 import { formatCount, formatTime, escapeHtml, timeAgo } from '../utils.js';
-import { toggleLike, isLiked, toggleCollection, isCollected, addHistory } from '../store.js';
+import { toggleLike, isLiked, toggleCollection, isCollected, addHistory, isFollowed, toggleFollow } from '../store.js';
 import { renderVideoCard } from './home.js';
 import { decryptImages } from '../imgloader.js';
 
@@ -36,7 +36,7 @@ export function initDetail(cfg) {
   });
   document.getElementById('detailCollect').addEventListener('click', () => {
     if (!currentVideo) return;
-    toggleCollection(currentVideo.id);
+    toggleCollection(currentVideo, 'long');
     updateActions();
   });
 
@@ -58,7 +58,7 @@ async function openDetail(id) {
     ]);
 
     currentVideo = detail;
-    addHistory(id);
+    addHistory(detail, 'long');
 
     // 封面（解密加载）
     const coverImg = document.getElementById('detailCover');
