@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. 公开访客访问首页、分类、详情和播放相关静态资源时，主路径默认由 Pages 静态资源和 R2 对象响应，而不是依赖 Worker / Pages Functions 计算。
   3. HTML、JS、CSS、JSON、封面和 m3u8 都具备清晰且可验证的缓存与失效策略，既能复用缓存，又能在更新后按预期刷新。
 **Plans**:
-- [ ] `01-01` 发布版本基线 - 统一 `RELEASE_ID`、补齐锁文件与共享构建入口
+- [x] `01-01` 发布版本基线 - 统一 `RELEASE_ID`、补齐锁文件与共享构建入口
 - [ ] `01-02` Cloudflare 发布边界 - 去除 Worker 站点托管、用同版 CI 发布 Pages 与 R2
 - [ ] `01-03` 缓存与运行时一致性 - 固定播放器版本、引入 release-aware 前端与缓存合同
 
@@ -98,7 +98,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 静态分发底座 | 3/3 | Not started | - |
+| 1. 静态分发底座 | 1/3 | In Progress | - |
 | 2. 公开浏览入口 | 0/TBD | Not started | - |
 | 3. 播放与连续消费 | 0/TBD | Not started | - |
 | 4. SEO 索引资产 | 0/TBD | Not started | - |
