@@ -8,6 +8,8 @@ export function buildConfig(outDir, {
   categories,
   feeds,
   totalVideos,
+  totalComics = 0,
+  comicTags = [],
   r2Base,
   releaseId,
   generatedAt,
@@ -25,6 +27,8 @@ export function buildConfig(outDir, {
     categories,
     feeds,
     totalVideos,
+    totalComics,
+    comicTags,
   };
 
   writeFileSync(join(outDir, 'data', 'config.json'), JSON.stringify(config, null, 2));

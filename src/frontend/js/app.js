@@ -4,6 +4,7 @@ import { initHome } from './pages/home.js';
 import { initDouyin } from './pages/douyin.js';
 import { initMine, refreshMine } from './pages/mine.js';
 import { initDetail } from './pages/detail.js';
+import { initComic } from './pages/comic.js';
 
 let currentTab = 'home';
 
@@ -15,7 +16,7 @@ function switchTab(name) {
   document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
 
-  const tabMap = { home: 0, douyin: 1, mine: 2 };
+  const tabMap = { home: 0, douyin: 1, comic: 2, mine: 3 };
   document.querySelectorAll('.tab-item')[tabMap[name]]?.classList.add('active');
 
   if (name === 'mine') refreshMine();
@@ -108,6 +109,7 @@ async function init() {
   await Promise.all([
     initHome(config),
     initDouyin(config),
+    initComic(config),
   ]);
   initMine();
   initDetail(config);

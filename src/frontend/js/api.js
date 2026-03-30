@@ -92,6 +92,9 @@ export const api = {
   author: (uid) => fetchJSON(buildUrl(`/data/author/${uid}.json`)),
   authorPage: (uid, page) => fetchJSON(buildUrl(`/data/author/${uid}/page_${page}.json`)),
   m3u8Url: (id) => `${m3u8Base || R2_BASE}/m3u8/VID${id}.m3u8`,
+  comicList: () => fetchJSON(buildUrl('/data/comic/list.json')),
+  comicTag: (tag) => fetchJSON(buildUrl(`/data/comic/tag/${encodeURIComponent(tag)}.json`)),
+  comicDetail: (id) => fetchJSON(buildUrl(`/data/comic/${id}.json`)),
 };
 
 // === 图片解密 ===

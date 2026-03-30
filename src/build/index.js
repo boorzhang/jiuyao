@@ -7,6 +7,7 @@ import { buildRecommend } from './recommend.js';
 import { buildDetails } from './details.js';
 import { buildAuthors } from './authors.js';
 import { buildConfig } from './config.js';
+import { buildComics } from './comics.js';
 
 /**
  * 构建 R2 数据产物。
@@ -84,11 +85,17 @@ export function buildData({
     console.log('  M3U8 复制完成');
   }
 
-  console.log('\n[8/8] 生成 config.json...');
+  console.log('\n[8/9] 构建漫画数据...');
+  const { comicCount, comicTags } = buildComics(root, outDir);
+  console.log(`  漫画: ${comicCount}, 标签: ${comicTags.length}`);
+
+  console.log('\n[9/9] 生成 config.json...');
   const config = buildConfig(outDir, {
     categories,
     feeds,
     totalVideos: videoMap.size,
+    totalComics: comicCount,
+    comicTags,
     r2Base,
     releaseId,
     generatedAt,
@@ -110,6 +117,7 @@ export function buildData({
     detailCount,
     commentCount,
     authorCount,
+    comicCount,
     config,
     outDir,
   };

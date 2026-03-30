@@ -168,6 +168,51 @@
   </div>
 </div>
 
+<!-- ===== COMIC PAGE ===== -->
+<div class="page" id="page-comic">
+  <div class="comic-header">
+    <div class="home-logo">
+      <div class="logo-circle">漫</div>
+      <span class="logo-text">漫画</span>
+    </div>
+    <div class="cat-tabs-shell">
+      <div class="cat-tabs" id="comicTabs"></div>
+    </div>
+  </div>
+  <div class="comic-grid" id="comicGrid"></div>
+</div>
+
+<!-- ===== COMIC DETAIL OVERLAY ===== -->
+<div class="comic-detail" id="comicDetail">
+  <div class="comic-detail-back">
+    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="#fff" stroke-width="2"/></svg>
+  </div>
+  <div class="comic-detail-body">
+    <div class="comic-detail-cover">
+      <img id="comicDetailCover" data-decrypt-src="" alt="">
+    </div>
+    <div class="comic-detail-info">
+      <div class="comic-detail-title" id="comicDetailTitle"></div>
+      <div class="comic-detail-tags" id="comicDetailTags"></div>
+      <div class="comic-detail-summary" id="comicDetailSummary"></div>
+      <div class="comic-detail-stats" id="comicDetailStats"></div>
+      <button class="comic-read-btn" id="comicReadBtn">开始阅读</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COMIC READER OVERLAY ===== -->
+<div class="comic-reader" id="comicReader">
+  <div class="comic-reader-header" id="comicReaderHeader">
+    <div class="comic-reader-back">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="#fff" stroke-width="2"/></svg>
+    </div>
+    <div class="comic-reader-title" id="comicReaderTitle"></div>
+    <div class="comic-reader-page" id="comicReaderPage">1/1</div>
+  </div>
+  <div class="comic-reader-body" id="comicReaderBody"></div>
+</div>
+
 <!-- ===== BOTTOM TAB BAR ===== -->
 <div class="tab-bar">
   <div class="tab-item active" data-tab="home">
@@ -177,6 +222,10 @@
   <div class="tab-item" data-tab="douyin">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
     <span>抖音</span>
+  </div>
+  <div class="tab-item" data-tab="comic">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <span>漫画</span>
   </div>
   <div class="tab-item" data-tab="mine">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
