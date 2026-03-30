@@ -5,6 +5,7 @@ import { join, extname } from 'node:path';
 const ROOT = process.cwd();
 const FRONTEND_DIR = join(ROOT, 'src', 'frontend');
 const DATA_DIR = join(ROOT, 'r2-data');
+const STORAGE_DIR = join(ROOT, 'storage');
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -63,9 +64,31 @@ const dataServer = createServer((req, res) => {
     res.end();
     return;
   }
+  
+  let pathname = new URL(req.url, 'http://localhost').pathname;
+  
+  // storage 目录映射：/comic/* -> storage/comic/*
+  if (pathname.startsWith('/comic/')) {
+    const filePath = join(STORAGE_DIR, decodeURIComponent(pathname));
+    if (existsSync(filePath) && statSync(filePath).isFile()) {
+      const ext = extname(filePath);
+      const mime = MIME_TYPES[ext] || 'application/octet-stream';
+      res.writeHead(200, {
+        'Content-Type': mime,
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache',
+      });
+      res.end(readFileSync(filePath));
+      return;
+    }
+  }
+  
+  // 优先尝试 r2-data，然后 storage
   if (!serve(DATA_DIR, req, res)) {
-    res.writeHead(404, { 'Access-Control-Allow-Origin': '*' });
-    res.end('Not Found');
+    if (!serve(STORAGE_DIR, req, res)) {
+      res.writeHead(404, { 'Access-Control-Allow-Origin': '*' });
+      res.end('Not Found');
+    }
   }
 });
 

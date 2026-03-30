@@ -10,3 +10,6 @@ dist
 node_modules
 *.bak
 .gstack/
+storage/
+comics_decrypted
+comics_json
