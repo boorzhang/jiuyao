@@ -2,6 +2,7 @@
 const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 const DEFAULT_R2_BASE = isDev ? 'http://localhost:3001' : '';
 let R2_BASE = DEFAULT_R2_BASE;
+let m3u8Base = '';
 
 const cache = new Map();
 
@@ -40,6 +41,10 @@ function clearImageCache() {
   }
   imgDecryptCache.clear();
   imgDecryptInFlight.clear();
+}
+
+export function setM3u8Base(base) {
+  m3u8Base = normalizeBase(base);
 }
 
 export function setR2Base(base) {
@@ -86,7 +91,7 @@ export const api = {
   videoComments: (id) => fetchJSON(buildUrl(`/data/video/${id}/comments.json`)),
   author: (uid) => fetchJSON(buildUrl(`/data/author/${uid}.json`)),
   authorPage: (uid, page) => fetchJSON(buildUrl(`/data/author/${uid}/page_${page}.json`)),
-  m3u8Url: (id) => buildUrl(`/m3u8/VID${id}.m3u8`),
+  m3u8Url: (id) => `${m3u8Base || R2_BASE}/m3u8/VID${id}.m3u8`,
 };
 
 // === 图片解密 ===

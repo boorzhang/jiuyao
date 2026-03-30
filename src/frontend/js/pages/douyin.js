@@ -161,9 +161,11 @@ function dySlideHTML(v, position) {
     </div>
     <div class="sv-overlay">
       <div class="sv-publisher">
-        ${v.publisher?.portrait ? `<img class="sv-avatar" data-decrypt-src="${escapeHtml(v.publisher.portrait)}" alt="">` : ''}
-        <span class="sv-name">@${escapeHtml(v.publisher?.name || '用户')}</span>
-        ${followed ? '' : '<button class="sv-follow-btn" data-action="follow">+ 关注</button>'}
+        <div class="sv-publisher-link" data-action="publisher">
+          ${v.publisher?.portrait ? `<img class="sv-avatar" data-decrypt-src="${escapeHtml(v.publisher.portrait)}" alt="">` : ''}
+          <span class="sv-name">@${escapeHtml(v.publisher?.name || '用户')}</span>
+        </div>
+        <button class="sv-follow-btn ${followed ? 'followed' : ''}" data-action="follow">${followed ? '已关注' : '+ 关注'}</button>
       </div>
       <div class="sv-title">${escapeHtml(v.title)}</div>
       ${tags.length ? `<div class="sv-tags">${tags.map(t => `<span class="sv-tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
@@ -177,7 +179,7 @@ function dySlideHTML(v, position) {
         <div class="sv-action-avatar" data-action="avatar">
           ${v.publisher?.portrait ? `<img data-decrypt-src="${escapeHtml(v.publisher.portrait)}" alt="">` : '<div style="width:44px;height:44px;border-radius:50%;background:#333"></div>'}
         </div>
-        ${followed ? '' : '<div class="plus-badge" data-action="plus-follow">+</div>'}
+        ${followed ? '<div class="plus-badge followed-badge">✓</div>' : '<div class="plus-badge" data-action="plus-follow">+</div>'}
       </div>
       <div class="sv-action-btn ${liked ? 'liked' : ''}" data-action="like">
         <svg viewBox="0 0 24 24" fill="${liked ? 'var(--accent)' : 'none'}" stroke="${liked ? 'var(--accent)' : 'currentColor'}" stroke-width="2">
@@ -402,7 +404,18 @@ export async function initDouyin(cfg) {
       return;
     }
 
-    // 头像点击 → 用户主页
+    // 左下角头像/名字点击 → 用户主页
+    const publisherLink = e.target.closest('.sv-publisher-link');
+    if (publisherLink) {
+      e.stopPropagation();
+      const cur = feed()[dy.idx];
+      if (cur?.publisher) {
+        window.dispatchEvent(new CustomEvent('openUserProfile', { detail: cur.publisher }));
+      }
+      return;
+    }
+
+    // 右侧头像点击 → 用户主页
     const avatarBtn = e.target.closest('.sv-action-avatar');
     if (avatarBtn) {
       e.stopPropagation();

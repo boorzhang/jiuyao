@@ -7,6 +7,23 @@ let currentPage = 1;
 let totalPages = 1;
 let loading = false;
 let allLoaded = false;
+let isFirstLoad = true;
+
+function skeletonCardHTML() {
+  return `<div class="video-card skeleton-card">
+    <div class="cover-box skeleton" style="padding-top:56.25%"></div>
+    <div class="info-box">
+      <div class="skeleton" style="height:14px;width:80%;border-radius:4px;margin-bottom:6px"></div>
+      <div class="skeleton" style="height:12px;width:50%;border-radius:4px"></div>
+    </div>
+  </div>`;
+}
+
+function showSkeletons() {
+  const grid = document.getElementById('homeGrid');
+  grid.innerHTML = Array(8).fill(skeletonCardHTML()).join('');
+  isFirstLoad = true;
+}
 
 // 同步移动端分类栏提示，只在存在横向溢出且用户还没滚动时展示。
 function syncCatTabsHint() {
@@ -67,6 +84,10 @@ async function loadPage() {
   try {
     const data = await api.categoryPage(currentCat, currentPage);
     const grid = document.getElementById('homeGrid');
+    if (isFirstLoad) {
+      grid.innerHTML = '';
+      isFirstLoad = false;
+    }
     grid.insertAdjacentHTML('beforeend', data.videos.map(v => renderVideoCard(v)).join(''));
     totalPages = data.totalPages;
     if (currentPage >= totalPages) allLoaded = true;
@@ -84,7 +105,7 @@ function switchCat(slug) {
   allLoaded = false;
   const catInfo = config.categories.find(c => c.slug === slug);
   if (catInfo) totalPages = catInfo.totalPages;
-  document.getElementById('homeGrid').innerHTML = '';
+  showSkeletons();
   window.scrollTo(0, 0);
   renderCatTabs();
   loadPage();
@@ -95,6 +116,7 @@ export async function initHome(cfg) {
   currentCat = config.categories[0]?.slug || '';
 
   renderCatTabs();
+  showSkeletons();
 
   const catTabs = document.getElementById('catTabs');
 

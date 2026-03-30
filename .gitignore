@@ -13,3 +13,4 @@ node_modules
 storage/
 comics_decrypted
 comics_json
+.wrangler
