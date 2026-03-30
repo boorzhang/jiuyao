@@ -9,3 +9,4 @@ r2-data
 dist
 node_modules
 *.bak
+.gstack/

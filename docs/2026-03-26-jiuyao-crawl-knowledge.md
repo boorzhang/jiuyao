@@ -48,18 +48,18 @@
 
 ```json
 {
-  "devID": "full_时间戳_随机串",
-  "sysType": "ios",
-  "cutInfos": "{}",
-  "isAppStore": false
+    "devID": "full_时间戳_随机串",
+    "sysType": "ios",
+    "cutInfos": "{}",
+    "isAppStore": false
 }
 ```
 
 - 登录成功后拿到 `token`
 - 后续接口使用的关键请求头：
-  - `Authorization: {token}`
-  - `temp: test`
-  - `X-User-Agent: BuildID=com.abc.Butterfly;SysType=iOS;DevID={devID};Ver=1.0.0;DevType=iPhone;Terminal=1;IsH5=1`
+    - `Authorization: {token}`
+    - `temp: test`
+    - `X-User-Agent: BuildID=com.abc.Butterfly;SysType=iOS;DevID={devID};Ver=1.0.0;DevType=iPhone;Terminal=1;IsH5=1`
 
 ### 3.3 已确认接口
 
@@ -75,9 +75,9 @@
 #### 评论相关
 
 - 主评论：`GET /api/app/comment/list`
-  - 参数：`objID`, `objType=video`, `curTime`, `pageNumber`, `pageSize`
+    - 参数：`objID`, `objType=video`, `curTime`, `pageNumber`, `pageSize`
 - 二级回复：`GET /api/app/comment/info`
-  - 参数：`objID`, `cmtId`, `fstID`, `curTime`, `pageNumber`, `pageSize`
+    - 参数：`objID`, `cmtId`, `fstID`, `curTime`, `pageNumber`, `pageSize`
 
 ## 4. 加解密规则
 
@@ -97,8 +97,8 @@
 - `INTERFACE_KEY = 65dc07d1b7915c6b2937432b091837a7`
 - 实际解密流程是脚本里实现的自定义派生逻辑 + `AES-256-CBC`
 - 现成实现可直接复用：
-  - `/var/zip/jiuyao/comment_export.js`
-  - `/var/zip/jiuyao/scripts/export/video_json_export_full.js`
+    - `/var/zip/jiuyao/comment_export.js`
+    - `/var/zip/jiuyao/scripts/export/video_json_export_full.js`
 
 ## 5. m3u8 地址生成规则
 
@@ -109,7 +109,7 @@
 前端等价逻辑：
 
 ```js
-`${baseUrl}/api/app/vid/h5/m3u8/${sourceURL}?token=${token}&c=${videoRoadLine.url}`
+;`${baseUrl}/api/app/vid/h5/m3u8/${sourceURL}?token=${token}&c=${videoRoadLine.url}`
 ```
 
 抓取脚本的实现也是同一规则：
@@ -188,8 +188,8 @@ m3u8 = BASE_URL + /api/app/vid/h5/m3u8/{sourceURL}?token={JWT}&c={lineUrl}
   "lineUrl": "https://s12.qqdanb.cn",
   "baseUrl": "https://d3vfkhk0c6rox6.cloudfront.net",
   "tokenPayload": {
-    "timestamp": 1774..., 
-    "uid": 111..., 
+    "timestamp": 1774...,
+    "uid": 111...,
     "type": 0,
     "isoTime": "..."
   },
@@ -232,20 +232,20 @@ m3u8 = BASE_URL + /api/app/vid/h5/m3u8/{sourceURL}?token={JWT}&c={lineUrl}
 - 当前延后重试上限：`MAX_DEFERRED_ATTEMPTS = 2`
 - 只有超过延后重试上限后仍失败，才写入 `_errors.ndjson`
 - 为避免旧格式文件误判可续跑结果，续跑只接受：
-  - `exportVersion === 2`
-  - `fetchStatus === 'ok'`
+    - `exportVersion === 2`
+    - `fetchStatus === 'ok'`
 
 ### 8.2 当前样本验证结果
 
 - 有评论样本：
-  - `/var/zip/jiuyao/comments/_by_id/VID67cc03de1564603015afe898.json`
-  - 结果确认不含 `userID = 100001`
-  - `counts.filteredCommentNodes = 1`
-  - `mainCommentsFetched = 2`
-  - `replyCommentsFetched = 4`
+    - `/var/zip/jiuyao/comments/_by_id/VID67cc03de1564603015afe898.json`
+    - 结果确认不含 `userID = 100001`
+    - `counts.filteredCommentNodes = 1`
+    - `mainCommentsFetched = 2`
+    - `replyCommentsFetched = 4`
 - 空评论样本：
-  - `VID66f3d3f0036ad9f79eb225a1.json` 不存在
-  - 说明“空评论不写文件”规则生效
+    - `VID66f3d3f0036ad9f79eb225a1.json` 不存在
+    - 说明“空评论不写文件”规则生效
 
 ### 8.3 当前评论摘要
 
@@ -289,22 +289,22 @@ m3u8 = BASE_URL + /api/app/vid/h5/m3u8/{sourceURL}?token={JWT}&c={lineUrl}
 ### 10.1 核心导出脚本
 
 - `scripts/export/video_json_export.js`
-  - 早期版本，用于先抓 1000+ 视频验证链路
+    - 早期版本，用于先抓 1000+ 视频验证链路
 - `scripts/export/video_json_export_full.js`
-  - 当前全量视频导出主脚本
+    - 当前全量视频导出主脚本
 
 ### 10.2 核心前端证据
 
 - `scripts/frontend/video2.js`
-  - 视频相关 API 封装，包含 `/vid/info`、`/comment/list` 等接口名
+    - 视频相关 API 封装，包含 `/vid/info`、`/comment/list` 等接口名
 - `scripts/frontend/details-efa47c28.js`
-  - 视频详情页主证据，确认了 `m3u8` 拼接规则、评论页入口、线路切换等关键逻辑
+    - 视频详情页主证据，确认了 `m3u8` 拼接规则、评论页入口、线路切换等关键逻辑
 - `scripts/frontend/index-2be5d30c.js`
-  - 视频列表卡片，说明列表页如何跳转到 `/movieDetails`
+    - 视频列表卡片，说明列表页如何跳转到 `/movieDetails`
 - `scripts/frontend/index-678098ae.js`
-  - 试看结束后的购买弹层逻辑
+    - 试看结束后的购买弹层逻辑
 - `scripts/frontend/index-90da781d.js`
-  - VIP/预售/线路切换相关逻辑，能解释 `videoRoadLine`
+    - VIP/预售/线路切换相关逻辑，能解释 `videoRoadLine`
 
 ### 10.3 辅助前端证据
 
@@ -320,11 +320,11 @@ m3u8 = BASE_URL + /api/app/vid/h5/m3u8/{sourceURL}?token={JWT}&c={lineUrl}
 以下内容没有归档到 `scripts`：
 
 - `/tmp/index-homepage-sort-check.js`
-  - 明显是另一个小说站项目，不属于当前目标站
+    - 明显是另一个小说站项目，不属于当前目标站
 - `/tmp/login_resp.json`
-  - 只是一次登录响应，token 会过期，不适合作为脚本资产保留
+    - 只是一次登录响应，token 会过期，不适合作为脚本资产保留
 - `/tmp/video_json`
-  - 数据输出目录，不是脚本代码
+    - 数据输出目录，不是脚本代码
 
 ## 11. 继续运行的常用命令
 
@@ -388,13 +388,13 @@ OUT_DIR=/var/zip/jiuyao/comments \
 
 1. 先读本文件和 `scripts/README.md`
 2. 再读：
-   - `/var/zip/jiuyao/comment_export.js`
-   - `/var/zip/jiuyao/lib/comment_export_core.js`
-   - `/var/zip/jiuyao/scripts/frontend/details-efa47c28.js`
-   - `/var/zip/jiuyao/scripts/frontend/video2.js`
+    - `/var/zip/jiuyao/comment_export.js`
+    - `/var/zip/jiuyao/lib/comment_export_core.js`
+    - `/var/zip/jiuyao/scripts/frontend/details-efa47c28.js`
+    - `/var/zip/jiuyao/scripts/frontend/video2.js`
 3. 决定是：
-   - 继续单线程稳定抓
-   - 还是做更稳的断点续跑/速率控制/错误重试策略
+    - 继续单线程稳定抓
+    - 还是做更稳的断点续跑/速率控制/错误重试策略
 
 ## 13. 当前仍未完全确认的点
 
@@ -404,3 +404,13 @@ OUT_DIR=/var/zip/jiuyao/comments \
 - `commentCount = 0` 是否永远等于接口一定无评论，当前脚本按经验做了“跳过优化”
 - `VID` 线路是否只有第一条可用，当前默认取 `/ping/domain/h5` 里第一条 `VID.domain[0].url`
 - 某些分类目录里的视频是否会因为站点后续改版继续增长，需要重新跑视频全量脚本验证
+
+### 注意：这个SPA站的VIP账号登录方法：
+
+3-30号新发现
+进入 我的-右上角的设置-账号找回-再点图片识别找回
+选择上传我们 src/img/vip.jpg 就可以登录成下面的VIP账户：
+用户ID：10908226
+用户名：辜如智
+限时永久卡会员
+到期时间：2053.08.09
