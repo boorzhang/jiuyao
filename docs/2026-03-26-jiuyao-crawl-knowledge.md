@@ -405,6 +405,43 @@ OUT_DIR=/var/zip/jiuyao/comments \
 - `VID` 线路是否只有第一条可用，当前默认取 `/ping/domain/h5` 里第一条 `VID.domain[0].url`
 - 某些分类目录里的视频是否会因为站点后续改版继续增长，需要重新跑视频全量脚本验证
 
+## 14. 站点启动的时候需要的点击动作和获取VIP账号信息token的方案
+
+curl -H "Host: d3vfkhk0c6rox6.cloudfront.net" -H "sec-fetch-site: cross-site" -H "accept: application/json, text/plain, _/_" -H "origin: https://dw370qtmy9es.cloudfront.net" -H "sec-fetch-mode: cors" -H "user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3.1 Safari/605.1.15" -H "referer: https://dw370qtmy9es.cloudfront.net/" -H "sec-fetch-dest: empty" -H "accept-language: zh-CN,zh-Hans;q=0.9" -H "priority: u=3, i" --compressed "https://d3vfkhk0c6rox6.cloudfront.net/api/app/ping/check"
+
+还有 奇怪的 请求
+curl -X CONNECT "https://nghusuc.com"
+
+需要从他的pwa开始启动的入口
+https://dw370qtmy9es.cloudfront.net/?tid=8694839559480938mmzpnqd0&dc=1GeePYQk
+
+一路抓取browser 的真实请求xhr 来一路分析到 点 动画，漫画，三级片 分类时的具体 api接口在哪里，只确定漫画的图片地址格式都是：
+curl -H "Host: imgosne.qqdanb.cn" -H "Sec-Fetch-Site: cross-site" -H "Accept: application/json, text/plain, _/_" -H "Origin: https://dw370qtmy9es.cloudfront.net" -H "Sec-Fetch-Mode: cors" -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3.1 Safari/605.1.15" -H "Referer: https://dw370qtmy9es.cloudfront.net/" -H "Sec-Fetch-Dest: empty" -H "Accept-Language: zh-CN,zh-Hans;q=0.9" -H "Priority: u=3, i" --compressed "https://imgosne.qqdanb.cn/v3/image/1dd/ty/1hb/cz/87c9236237515f73ce4831c6385b2e4a.jpg"
+
+提示：漫画章节内容里全是图片，图片是可以直接访问的，不需要VIP权限，比如上面的
+https://imgosne.qqdanb.cn/v3/image/1dd/ty/1hb/cz/87c9236237515f73ce4831c6385b2e4a.jpg
+可以用来推导漫画章节和里面的内容图片有多少，怎么抓取
+
+分享漫画：
+https://d2wu14ta6bwns9.cloudfront.net/?pc=4VJXNK
+
+购买过VIP的ios本地描述文件安装的webclip版本的入口URL：
+https://5w8cj.com/?dc=1GeePYQk&tid=8694839559480938mmzpnqd0
+这个地址会跳转到可用的地址，看看是否自动登录后还是VIP身份。
+
+账号凭证
+用户ID：10908226
+用户名：辜如智
+限时永久卡会员
+到期时间：2053.08.09
+
+充值记录
+账单编号：WNSY03250120160T5YC
+状态：支付成功
+2026-03-25 01:20:33
+
+永久官方地址 https://91porn01.cc
+
 ### 注意：这个SPA站的VIP账号登录方法：
 
 3-30号新发现
@@ -414,3 +451,63 @@ OUT_DIR=/var/zip/jiuyao/comments \
 用户名：辜如智
 限时永久卡会员
 到期时间：2053.08.09
+
+safari浏览器手动登录成功VIP后，Charles 抓取到了访问我的页面的请求信息
+请检查请求的和解密发现下是否有VIP的token
+
+curl -H "Host: d3i0tylhl4ykjk.cloudfront.net" -H "accept: _/_" -H "origin: https://dw370qtmy9es.cloudfront.net" -H "sec-fetch-site: cross-site" -H "x-user-agent: BuildID=com.abc.Butterfly;SysType=pc;DevID=890FDC60208B6BAC1774771247746;Ver=1.0.0;DevType=iPhone;Terminal=1;IsH5=1" -H "temp: test" -H "sec-fetch-mode: cors" -H "user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3.1 Safari/605.1.15" -H "authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aW1lc3RhbXAiOjE3NzQ4MzYxNjMzODQxMTU1MDAsInR5cGUiOjAsInVpZCI6MTA5MDgyMjZ9.R0FCVfpP-Ex2jR8mT7gF775GDm9F4flc6wTQGUKoNl0" -H "sec-fetch-dest: empty" -H "referer: https://dw370qtmy9es.cloudfront.net/" -H "accept-language: zh-CN,zh-Hans;q=0.9" -H "priority: u=3, i" --compressed "https://d3i0tylhl4ykjk.cloudfront.net/api/app/mine/info"
+
+返回结果是
+
+{
+"code": 200,
+"data": "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",
+"hash": true,
+"msg": "success",
+"time": "2026-03-30T03:11:26.729Z",
+"tip": ""
+}
+
+还有
+
+curl -H "Host: d3i0tylhl4ykjk.cloudfront.net" -H "accept: _/_" -H "origin: https://dw370qtmy9es.cloudfront.net" -H "sec-fetch-site: cross-site" -H "x-user-agent: BuildID=com.abc.Butterfly;SysType=pc;DevID=890FDC60208B6BAC1774771247746;Ver=1.0.0;DevType=iPhone;Terminal=1;IsH5=1" -H "temp: test" -H "sec-fetch-mode: cors" -H "user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3.1 Safari/605.1.15" -H "authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aW1lc3RhbXAiOjE3NzQ4MzYxNjMzODQxMTU1MDAsInR5cGUiOjAsInVpZCI6MTA5MDgyMjZ9.R0FCVfpP-Ex2jR8mT7gF775GDm9F4flc6wTQGUKoNl0" -H "sec-fetch-dest: empty" -H "referer: https://dw370qtmy9es.cloudfront.net/" -H "accept-language: zh-CN,zh-Hans;q=0.9" -H "priority: u=3, i" --compressed "https://d3i0tylhl4ykjk.cloudfront.net/api/app/video_gold_coin/list?data=3yz90UWhDG0IlUqiRfBgy%2FyVg8RQU4B%2FXlxW7sNSedEDbymM1TpX%2FKG1gublIEeM"
+
+返回结果是
+
+{
+"code": 200,
+"data": "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",
+"hash": true,
+"msg": "success",
+"time": "2026-03-30T03:11:26.292Z",
+"tip": ""
+}
+
+还有
+
+curl -H "Host: d3i0tylhl4ykjk.cloudfront.net" -H "accept: _/_" -H "origin: https://dw370qtmy9es.cloudfront.net" -H "sec-fetch-site: cross-site" -H "x-user-agent: BuildID=com.abc.Butterfly;SysType=pc;DevID=890FDC60208B6BAC1774771247746;Ver=1.0.0;DevType=iPhone;Terminal=1;IsH5=1" -H "temp: test" -H "sec-fetch-mode: cors" -H "user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3.1 Safari/605.1.15" -H "authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aW1lc3RhbXAiOjE3NzQ4MzYxNjMzODQxMTU1MDAsInR5cGUiOjAsInVpZCI6MTA5MDgyMjZ9.R0FCVfpP-Ex2jR8mT7gF775GDm9F4flc6wTQGUKoNl0" -H "sec-fetch-dest: empty" -H "referer: https://dw370qtmy9es.cloudfront.net/" -H "accept-language: zh-CN,zh-Hans;q=0.9" -H "priority: u=3, i" --compressed "https://d3i0tylhl4ykjk.cloudfront.net/api/app/product/advanceStatus"
+
+返回结果是
+
+{
+"code": 200,
+"data": "Cs3+Dv3/UQOiY7ouDoym899aLfYv2PTwyjcNiiBM3ziTr/zWVY+BwybTsbqIt7v55BTLxlTvNDR8redPccWdTYAawpT5WbtBUdV5W4SvYzt5I4LBGIy4rdIw3LKJOBz1rzRwjV9lx36CsCRyEsNhgXBZ9LUuNn9MErr+xMxZthMtM7itGw4j/WoRpIl5+BNjggBYeWRdEDVfKeA7pmVojI4l0BWsMYx9/CdIM7vRqxbpK/+m93mn2gqxZkI8BXhFF42kTDMuYF2zqGKirtVQCNItO2VTncq3swWGv3MIcj9+0myZkBrHy6124zKBK86uzUlw7kJSxlw1XGl/zra7wBGf8i+SPrf+NyxJQriWYeQ8wnR9mpD90/Z5vAgU6FMdC9U0UPKksafCJzV0nW4DmrE6/5gqUBTE1zMjmR9lMkS7vHgU6pkVDzizX7mN41zJzpJYYvJSzEN/iykkccthph1kZTBZ5ob8qaKsnMIlBKauCORU1eWgewjdBKWrONaqS5gbO9vueSVEnCmubM36zfnvqC6GENGc6gG5lXqIt/wraBnY5E2XAYA0Q56YCYCK1FFjr3KrIlz4eIkoACaMI/j1uedagUkNRAVzQkzn///ZuS6nelPRCDzXpzL/Ap4cLTs7j1HhWsrpnBpuf085Arwoz2sojA7+kC7nAg==",
+"hash": true,
+"msg": "success",
+"time": "2026-03-30T03:11:26.281Z",
+"tip": ""
+}
+
+还有
+curl -H "Host: d3i0tylhl4ykjk.cloudfront.net" -H "accept: _/_" -H "origin: https://dw370qtmy9es.cloudfront.net" -H "sec-fetch-site: cross-site" -H "x-user-agent: BuildID=com.abc.Butterfly;SysType=pc;DevID=890FDC60208B6BAC1774771247746;Ver=1.0.0;DevType=iPhone;Terminal=1;IsH5=1" -H "temp: test" -H "sec-fetch-mode: cors" -H "user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3.1 Safari/605.1.15" -H "authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aW1lc3RhbXAiOjE3NzQ4MzYxNjMzODQxMTU1MDAsInR5cGUiOjAsInVpZCI6MTA5MDgyMjZ9.R0FCVfpP-Ex2jR8mT7gF775GDm9F4flc6wTQGUKoNl0" -H "sec-fetch-dest: empty" -H "referer: https://dw370qtmy9es.cloudfront.net/" -H "accept-language: zh-CN,zh-Hans;q=0.9" -H "priority: u=3, i" --compressed "https://d3i0tylhl4ykjk.cloudfront.net/api/app/ping/checkMessageTip"
+
+返回结果是
+
+{
+"code": 200,
+"data": "a3+lFEbfKrE6M7rq9EuFvfTxJgTdEPEsczilB7kyuhhAFXRkjQVGjZqoaaU=",
+"hash": true,
+"msg": "success",
+"time": "2026-03-30T03:11:26.400Z",
+"tip": ""
+}
