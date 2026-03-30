@@ -75,6 +75,11 @@ export function applyReleaseConfig(releaseManifest = {}) {
   const nextBase = releaseManifest.dataBase || releaseManifest.r2Base || DEFAULT_R2_BASE;
   const changed = setR2Base(nextBase);
 
+  // m3u8 可单独指定（本地开发时数据走本地，m3u8 走线上）
+  if (releaseManifest.m3u8Base) {
+    setM3u8Base(releaseManifest.m3u8Base);
+  }
+
   return {
     releaseId: releaseManifest.releaseId || '',
     r2Base: R2_BASE,

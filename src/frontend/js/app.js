@@ -1,4 +1,4 @@
-import { api, applyReleaseConfig, setM3u8Base } from './api.js';
+import { api, applyReleaseConfig } from './api.js';
 import { initImageLoader } from './imgloader.js';
 import { initHome } from './pages/home.js';
 import { initDouyin } from './pages/douyin.js';
@@ -98,9 +98,6 @@ async function init() {
   }
 
   document.documentElement.dataset.releaseId = release.releaseId || 'runtime';
-
-  // m3u8 使用线上 R2 地址
-  if (config.r2Base) setM3u8Base(config.r2Base);
 
   // 初始化图片解密加载器
   initImageLoader();

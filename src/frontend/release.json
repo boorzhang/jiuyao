@@ -3,6 +3,7 @@
   "generatedAt": "2026-03-27T00:00:00.000Z",
   "pagesBase": "",
   "dataBase": "http://localhost:3001",
+  "m3u8Base": "https://pub-a138790f1968465f8141cc9e341c2057.r2.dev/releases/785f8c4b8ea1",
   "apiBase": "",
   "assetPrefix": ""
 }
