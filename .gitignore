@@ -15,3 +15,4 @@ storage/
 comics_decrypted
 comics_json
 .wrangler
+.r2-uploaded.txt

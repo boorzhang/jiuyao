@@ -45,6 +45,7 @@ test('buildReleaseManifest 生成完整的发布清单字段', () => {
     generatedAt: '2026-03-27T12:34:56.000Z',
     pagesBase: '',
     dataBase: 'https://static.example.com/releases/release-001',
+    m3u8Base: '',
     apiBase: 'https://api.example.com',
     assetPrefix: '/assets/release-001',
   });

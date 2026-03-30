@@ -23,8 +23,9 @@ jobs:
           echo "RELEASE_ID=${GITHUB_SHA::12}" >> "$GITHUB_ENV"
           echo "R2_PUBLIC_BASE=${R2_PUBLIC_BASE}" >> "$GITHUB_ENV"
           echo "API_BASE=${API_BASE}" >> "$GITHUB_ENV"
+          # 数据使用固定前缀（不含 releaseId），避免重复上传
           if [ -n "${R2_PUBLIC_BASE:-}" ]; then
-            echo "DATA_BASE=${R2_PUBLIC_BASE%/}/releases/${GITHUB_SHA::12}" >> "$GITHUB_ENV"
+            echo "DATA_BASE=${R2_PUBLIC_BASE%/}" >> "$GITHUB_ENV"
           fi
 
       - name: Show release variables
@@ -38,13 +39,8 @@ jobs:
         env:
           RELEASE_ID: ${{ env.RELEASE_ID }}
           DATA_BASE: ${{ env.DATA_BASE }}
+          M3U8_BASE: ${{ vars.M3U8_BASE }}
           API_BASE: ${{ env.API_BASE }}
-
-      - run: npm run upload:r2
-        env:
-          RELEASE_ID: ${{ env.RELEASE_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

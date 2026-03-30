@@ -39,6 +39,7 @@ export function buildReleaseManifest({
   generatedAt = new Date().toISOString(),
   pagesBase = '',
   dataBase = '',
+  m3u8Base = '',
   apiBase = '',
   assetPrefix = '',
 } = {}) {
@@ -51,6 +52,7 @@ export function buildReleaseManifest({
     generatedAt,
     pagesBase,
     dataBase,
+    m3u8Base,
     apiBase,
     assetPrefix: assetPrefix || `/assets/${releaseId}`,
   };

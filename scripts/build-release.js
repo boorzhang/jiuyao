@@ -19,6 +19,7 @@ export async function buildRelease({
   generatedAt = new Date().toISOString(),
   pagesBase = env.PAGES_BASE || '',
   dataBase = env.DATA_BASE || env.R2_BASE || '',
+  m3u8Base = env.M3U8_BASE || '',
   apiBase = env.API_BASE || '',
   assetPrefix = `/assets/${releaseId}`,
 } = {}) {
@@ -36,6 +37,7 @@ export async function buildRelease({
     generatedAt,
     pagesBase,
     dataBase,
+    m3u8Base,
     apiBase,
     assetPrefix,
   });
