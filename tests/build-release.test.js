@@ -22,7 +22,7 @@ function createFixtureRoot() {
   mkdirSync(join(root, 'src', 'frontend', 'css'), { recursive: true });
   mkdirSync(join(root, 'src', 'frontend', 'js'), { recursive: true });
   mkdirSync(join(root, '_by_id'), { recursive: true });
-  mkdirSync(join(root, '_by_tags', '测试分类'), { recursive: true });
+  mkdirSync(join(root, '_by_tabs', '测试分类'), { recursive: true });
   mkdirSync(join(root, 'comments', '_by_id'), { recursive: true });
   mkdirSync(join(root, 'm3u8'), { recursive: true });
 
@@ -100,7 +100,7 @@ function createFixtureRoot() {
 
   for (const video of videos) {
     writeJson(join(root, '_by_id', `VID${video.id}.json`), video);
-    writeFileSync(join(root, '_by_tags', '测试分类', `VID${video.id}.json`), '{}');
+    writeFileSync(join(root, '_by_tabs', '测试分类', `VID${video.id}.json`), '{}');
     writeFileSync(join(root, 'm3u8', `VID${video.id}.m3u8`), '#EXTM3U\n#EXT-X-VERSION:3\n');
   }
 

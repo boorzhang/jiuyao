@@ -8,6 +8,7 @@ import { buildDetails } from './details.js';
 import { buildAuthors } from './authors.js';
 import { buildConfig } from './config.js';
 import { buildComics } from './comics.js';
+import { buildTags } from './tags.js';
 
 /**
  * 构建 R2 数据产物。
@@ -26,7 +27,7 @@ export function buildData({
   assetPrefix = '',
 } = {}) {
   const byIdDir = join(root, '_by_id');
-  const tagsDir = join(root, '_by_tags');
+  const tagsDir = join(root, '_by_tabs');
   const commentsDir = join(root, 'comments', '_by_id');
   const m3u8Dir = join(root, 'm3u8');
 
@@ -36,7 +37,7 @@ export function buildData({
 
   mkdirSync(outDir, { recursive: true });
 
-  console.log('\n[1/6] 读取全部视频...');
+  console.log('\n[1/10] 读取全部视频...');
   const files = readdirSync(byIdDir).filter(f => f.endsWith('.json'));
   const videoMap = new Map();
   for (const f of files) {
@@ -47,31 +48,35 @@ export function buildData({
 
   const allVideos = [...videoMap.values()];
 
-  console.log('\n[2/6] 构建分类分页...');
+  console.log('\n[2/10] 构建分类分页...');
   const { categories } = buildCategories(videoMap, tagsDir, outDir);
   console.log(`  生成 ${categories.length} 个分类:`);
   for (const c of categories) {
     console.log(`    ${c.name}: ${c.count} 个视频, ${c.totalPages} 页`);
   }
 
-  console.log('\n[3/6] 构建 Feed 分页...');
+  console.log('\n[3/10] 构建 Feed 分页...');
   const feeds = buildFeeds(allVideos, outDir);
   console.log(`  推荐 feed: ${feeds.recommend.totalPages} 页`);
   console.log(`  最新 feed: ${feeds.latest.totalPages} 页`);
 
-  console.log('\n[4/6] 构建推荐...');
+  console.log('\n[4/10] 构建推荐...');
   buildRecommend(allVideos, outDir);
   console.log(`  已为 ${allVideos.length} 个视频生成推荐`);
 
-  console.log('\n[5/7] 构建详情和评论...');
+  console.log('\n[5/10] 构建标签聚合...');
+  const { tagCount, hotTags } = buildTags(allVideos, outDir);
+  console.log(`  标签: ${tagCount}, 热门: ${hotTags.length}`);
+
+  console.log('\n[6/10] 构建详情和评论...');
   const { detailCount, commentCount } = buildDetails(videoMap, commentsDir, outDir);
   console.log(`  详情: ${detailCount}, 评论: ${commentCount}`);
 
-  console.log('\n[6/7] 构建作者数据...');
+  console.log('\n[7/10] 构建作者数据...');
   const { authorCount } = buildAuthors(allVideos, outDir);
   console.log(`  作者: ${authorCount}`);
 
-  console.log('\n[7/7] 复制 M3U8...');
+  console.log('\n[8/10] 复制 M3U8...');
   if (existsSync(m3u8Dir)) {
     const m3u8Out = join(outDir, 'm3u8');
     mkdirSync(m3u8Out, { recursive: true });
@@ -85,11 +90,11 @@ export function buildData({
     console.log('  M3U8 复制完成');
   }
 
-  console.log('\n[8/9] 构建漫画数据...');
+  console.log('\n[9/10] 构建漫画数据...');
   const { comicCount, comicTags } = buildComics(root, outDir);
   console.log(`  漫画: ${comicCount}, 标签: ${comicTags.length}`);
 
-  console.log('\n[9/9] 生成 config.json...');
+  console.log('\n[10/10] 生成 config.json...');
   const config = buildConfig(outDir, {
     categories,
     feeds,

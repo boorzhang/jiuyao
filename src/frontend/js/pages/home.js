@@ -82,7 +82,7 @@ async function loadPage() {
   loading = true;
 
   try {
-    const data = await api.categoryPage(currentCat, currentPage);
+    const data = await api.tabsPage(currentCat, currentPage);
     const grid = document.getElementById('homeGrid');
     if (isFirstLoad) {
       grid.innerHTML = '';

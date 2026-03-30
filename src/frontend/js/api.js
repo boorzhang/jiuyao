@@ -89,7 +89,9 @@ export function applyReleaseConfig(releaseManifest = {}) {
 
 export const api = {
   config: () => fetchJSON(buildUrl('/data/config.json')),
-  categoryPage: (cat, page) => fetchJSON(buildUrl(`/data/category/${encodeURIComponent(cat)}/page_${page}.json`)),
+  tabsPage: (cat, page) => fetchJSON(buildUrl(`/data/tabs/${encodeURIComponent(cat)}/page_${page}.json`)),
+  tagPage: (tag, page) => fetchJSON(buildUrl(`/data/tag/${encodeURIComponent(tag)}/page_${page}.json`)),
+  tagIndex: () => fetchJSON(buildUrl('/data/tag/index.json')),
   feedPage: (type, page) => fetchJSON(buildUrl(`/data/feed/${type}/page_${page}.json`)),
   videoDetail: (id) => fetchJSON(buildUrl(`/data/video/${id}.json`)),
   videoRecommend: (id) => fetchJSON(buildUrl(`/data/video/${id}/recommend.json`)),

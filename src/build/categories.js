@@ -29,7 +29,7 @@ export function slimVideo(v) {
 /**
  * 构建分类分页 JSON
  * @param {Map} videoMap - id → video 对象
- * @param {string} tagsDir - _by_tags 目录路径
+ * @param {string} tagsDir - _by_tabs 目录路径
  * @param {string} outDir - r2-data 输出目录
  * @returns {{ categories: Array<{name,slug,totalPages,count}> }}
  */
@@ -56,7 +56,7 @@ export function buildCategories(videoMap, tagsDir, outDir) {
     videos.sort((a, b) => (b.raw?.playCount || 0) - (a.raw?.playCount || 0));
 
     const totalPages = Math.ceil(videos.length / PAGE_SIZE) || 1;
-    const catOutDir = join(outDir, 'data', 'category', catSlug);
+    const catOutDir = join(outDir, 'data', 'tabs', catSlug);
     mkdirSync(catOutDir, { recursive: true });
 
     for (let p = 1; p <= totalPages; p++) {

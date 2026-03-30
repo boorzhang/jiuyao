@@ -134,14 +134,16 @@ function playCurrentSlide() {
     });
   }
 
-  // 用户点击取消静音
+  // 首次点击取消静音（后续暂停/恢复在 vp click handler 里处理）
   slide.addEventListener('click', function unmute(e) {
-    if (e.target.closest('.sv-action-btn') || e.target.closest('.sv-follow-btn')) return;
+    if (e.target.closest('.sv-action-btn') || e.target.closest('.sv-follow-btn')
+      || e.target.closest('.sv-action-avatar') || e.target.closest('.plus-badge')
+      || e.target.closest('.sv-publisher-link')) return;
     if (video.muted) {
       video.muted = false;
       slide.removeEventListener('click', unmute);
     }
-  }, { once: false });
+  });
 }
 
 function dySlideHTML(v, position) {
@@ -374,8 +376,9 @@ export async function initDouyin(cfg) {
   vp.addEventListener('mouseup', () => { mouseDown = false; touchEnd(); });
   vp.addEventListener('mouseleave', () => { if (mouseDown) { mouseDown = false; touchEnd(); } });
 
-  // 双击点赞
+  // 双击点赞 / 单击暂停
   let lastTapTime = 0;
+  let singleTapTimer = null;
   vp.addEventListener('click', (e) => {
     // 关注按钮
     const followBtn = e.target.closest('.sv-follow-btn');
@@ -446,6 +449,9 @@ export async function initDouyin(cfg) {
 
     const now = Date.now();
     if (now - lastTapTime < 300) {
+      // 双击点赞
+      clearTimeout(singleTapTimer);
+      singleTapTimer = null;
       const cur = feed()[dy.idx];
       if (cur && !isLiked(cur.id)) {
         toggleLike(cur.id);
@@ -454,8 +460,26 @@ export async function initDouyin(cfg) {
         const y = e.clientY || window.innerHeight / 2;
         showHeartAnim(x, y);
       }
+      lastTapTime = 0;
+    } else {
+      // 单击暂停/恢复（延迟等待双击判定）
+      lastTapTime = now;
+      singleTapTimer = setTimeout(() => {
+        singleTapTimer = null;
+        const slide = document.querySelector('.dy-slide[data-pos="current"]');
+        if (!slide) return;
+        const video = slide.querySelector('video.sv-video');
+        if (!video || video.muted) return;
+        const playIcon = document.getElementById('playIcon-current');
+        if (video.paused) {
+          video.play().catch(() => {});
+          if (playIcon) playIcon.classList.remove('show');
+        } else {
+          video.pause();
+          if (playIcon) playIcon.classList.add('show');
+        }
+      }, 300);
     }
-    lastTapTime = now;
   });
 
   // 键盘

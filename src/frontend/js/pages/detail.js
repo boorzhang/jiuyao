@@ -28,6 +28,18 @@ export function initDetail(cfg) {
   // 播放按钮
   document.querySelector('.detail-video-area .play-btn').addEventListener('click', playVideo);
 
+  // 点击视频区域暂停/恢复
+  document.querySelector('.detail-video-area').addEventListener('click', (e) => {
+    if (e.target.closest('.play-btn')) return;
+    const video = document.getElementById('detailVideoEl');
+    if (!video) return;
+    if (video.paused) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  });
+
   // Tab 切换
   document.querySelectorAll('.detail-tab').forEach((tab, i) => {
     tab.addEventListener('click', () => {
@@ -287,10 +299,6 @@ function tagSkeletonHTML() {
 }
 
 async function openTagPage(tagName) {
-  // 检查标签是否在 config.categories 中
-  const catInfo = config?.categories?.find(c => c.name === tagName || c.slug === tagName);
-  const slug = catInfo ? catInfo.slug : tagName;
-
   let overlay = document.getElementById('tagOverlay');
   if (overlay) overlay.remove();
 
@@ -302,7 +310,7 @@ async function openTagPage(tagName) {
       <div class="mine-overlay-back">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
       </div>
-      <div class="mine-overlay-title">${escapeHtml(tagName)}</div>
+      <div class="mine-overlay-title">#${escapeHtml(tagName)}</div>
       <div style="width:28px"></div>
     </div>
     <div class="mine-overlay-body">
@@ -323,11 +331,11 @@ async function openTagPage(tagName) {
   let tagLoading = false;
   let tagAllLoaded = false;
 
-  async function loadTagPage() {
+  async function loadTagPageData() {
     if (tagLoading || tagAllLoaded) return;
     tagLoading = true;
     try {
-      const data = await api.categoryPage(slug, page);
+      const data = await api.tagPage(tagName, page);
       if (page === 1) grid.innerHTML = '';
       grid.insertAdjacentHTML('beforeend', data.videos.map(v => renderVideoCard(v, config)).join(''));
       decryptImages(grid);
@@ -347,7 +355,7 @@ async function openTagPage(tagName) {
   // 无穷滚动
   body.addEventListener('scroll', () => {
     if (body.scrollTop + body.clientHeight >= body.scrollHeight - 300) {
-      loadTagPage();
+      loadTagPageData();
     }
   });
 
@@ -360,7 +368,7 @@ async function openTagPage(tagName) {
     }
   });
 
-  await loadTagPage();
+  await loadTagPageData();
 }
 
 // 点击返回按钮时调用 history.back()，触发 popstate 再执行 closeDetail

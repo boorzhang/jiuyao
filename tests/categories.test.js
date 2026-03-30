@@ -72,7 +72,7 @@ describe('categories', () => {
       assert.equal(result.categories[0].totalPages, 3);
 
       // 验证第1页
-      const page1 = JSON.parse(readFileSync(join(outDir, 'data', 'category', '测试分类', 'page_1.json'), 'utf-8'));
+      const page1 = JSON.parse(readFileSync(join(outDir, 'data', 'tabs', '测试分类', 'page_1.json'), 'utf-8'));
       assert.equal(page1.page, 1);
       assert.equal(page1.totalPages, 3);
       assert.equal(page1.videos.length, 20);
@@ -81,7 +81,7 @@ describe('categories', () => {
       assert.equal(page1.videos[1].playCount, 4400);
 
       // 验证第3页（最后一页5条）
-      const page3 = JSON.parse(readFileSync(join(outDir, 'data', 'category', '测试分类', 'page_3.json'), 'utf-8'));
+      const page3 = JSON.parse(readFileSync(join(outDir, 'data', 'tabs', '测试分类', 'page_3.json'), 'utf-8'));
       assert.equal(page3.videos.length, 5);
       assert.equal(page3.page, 3);
 
