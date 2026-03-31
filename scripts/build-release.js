@@ -1,4 +1,5 @@
 import { join, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { buildFrontend } from './build-frontend.js';
 import { buildData } from '../src/build/index.js';
@@ -24,13 +25,12 @@ export async function buildRelease({
   assetPrefix = `/assets/${releaseId}`,
 } = {}) {
   const frontend = buildFrontend({ root, releaseId });
-  const data = buildData({
-    root,
-    releaseId,
-    generatedAt,
-    r2Base: dataBase,
-    assetPrefix,
-  });
+
+  // CI 环境没有本地原始数据目录，跳过数据构建（数据已通过 upload:r2 单独上传至 R2）
+  const hasLocalData = existsSync(join(root, '_by_id'));
+  const data = hasLocalData
+    ? buildData({ root, releaseId, generatedAt, r2Base: dataBase, assetPrefix })
+    : null;
 
   const manifest = buildReleaseManifest({
     releaseId,
@@ -58,5 +58,6 @@ const isMainModule = process.argv[1]
 
 if (isMainModule) {
   const result = await buildRelease();
-  console.log(`统一发布构建完成: ${result.releaseId}`);
+  const dataStatus = result.data ? '含数据构建' : '仅前端（无本地数据目录）';
+  console.log(`统一发布构建完成: ${result.releaseId} [${dataStatus}]`);
 }
